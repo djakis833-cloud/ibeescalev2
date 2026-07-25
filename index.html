@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<!--
+  ΣΗΜΕΙΩΣΗ ΓΙΑ ΤΟΝ CLAUDE (όχι για τον χρήστη):
+  Σε κάθε αλλαγή που κάνεις σε αυτό το αρχείο (index.html), ΠΡΕΠΕΙ να ανεβάζεις
+  αυτόματα τον αριθμό έκδοσης (version) κατά ένα patch version, ΧΩΡΙΣ να ρωτάς
+  τον χρήστη αν το θέλει — απλά ενημέρωσέ τον στο τέλος ότι η έκδοση άλλαξε.
+  Η τρέχουσα έκδοση εμφανίζεται σε ΔΥΟ σημεία στο αρχείο και πρέπει να
+  ενημερώνονται ΚΑΙ τα δύο ταυτόχρονα ώστε να ταιριάζουν:
+    1) class="login-version"  (οθόνη σύνδεσης)
+    2) class="info-row-val"   (καρτέλα «Πληροφορίες», γραμμή "version :")
+  Μορφή: vMAJOR.MINOR.PATCH (π.χ. 15.4.5 -> 15.4.6 για μικρή αλλαγή/bugfix,
+  15.4.5 -> 15.5.0 για νέο feature). Χρησιμοποίησε την κρίση σου για το ποιο
+  ψηφίο ν' ανέβει, ανάλογα με το μέγεθος της αλλαγής.
+
+  ΕΠΙΠΛΕΟΝ ΣΗΜΕΙΩΣΗ: Κάθε φορά που δημιουργείς (create_file) το αρχείο index.html
+  με τις αλλαγές, το ΟΝΟΜΑ του αρχείου πρέπει να περιέχει τον αριθμό της τρέχουσας
+  έκδοσης, στη μορφή index_vMAJOR.MINOR.PATCH.html (π.χ. index_v15.4.6.html),
+  αντί για το απλό "index.html".
+-->
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<script>(function(){try{if(localStorage.getItem('darkMode')==='1'){document.documentElement.classList.add('dark-mode');}}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ζυγαριά Κυψέλης</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a3a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ζυγαριά">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #e8e8e8; font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding-bottom: 72px; }
+
+/* ── LOGIN ── */
+#login-screen { position: fixed; inset: 0; background: linear-gradient(160deg, #1a3a1a 0%, #2d5a2d 50%, #1a3a1a 100%); background-size: 250% 250%; animation: honeyBgFlow 16s ease-in-out infinite; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 24px; }
+@keyframes honeyBgFlow { 0% { background-position: 0% 30%; } 50% { background-position: 100% 70%; } 100% { background-position: 0% 30%; } }
+.login-logo { font-size: 64px; margin-bottom: 10px; }
+.login-ibee { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: 1px; margin-bottom: 4px; }
+.login-title { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.login-subtitle { font-size: 13px; color: #a8d5a8; margin-bottom: 32px; }
+.login-footer { margin-top: 24px; text-align: center; }
+.login-version { font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 600; margin-bottom: 6px; letter-spacing: 0.5px; }
+.login-contact { font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 600; }
+.login-contact a { color: #7ec87e; text-decoration: none; font-weight: 700; }
+.login-contact a:active { opacity: 0.7; }
+.login-card { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 340px; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 12px; font-weight: 600; color: #a8d5a8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.login-field input { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; font-size: 16px; color: #fff; outline: none; transition: border 0.2s; }
+.login-field input::placeholder { color: rgba(255,255,255,0.35); }
+.login-field input:focus { border-color: #7ec87e; background: rgba(255,255,255,0.18); }
+.login-loading { color: #a8d5a8; font-size: 13px; text-align: center; margin-bottom: 6px; min-height: 18px; }
+.login-error { color: #ff8080; font-size: 13px; text-align: center; margin-bottom: 12px; min-height: 18px; }
+.btn-login { width: 100%; padding: 13px; background: #4a9e4a; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-login:active { background: #3a8a3a; }
+.btn-login:disabled { background: #2a6a2a; opacity: 0.7; cursor: not-allowed; }
+.remember-row { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; cursor: pointer; user-select: none; }
+.remember-row input[type="checkbox"] { display: none; }
+.remember-box { width: 20px; height: 20px; border-radius: 5px; border: 2px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.10); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; }
+.remember-row input[type="checkbox"]:checked + .remember-box { background: #4a9e4a; border-color: #7ec87e; }
+.remember-box::after { content: '✓'; font-size: 13px; color: #fff; opacity: 0; transition: opacity 0.15s; }
+.remember-row input[type="checkbox"]:checked + .remember-box::after { opacity: 1; }
+.remember-label { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 500; }
+
+/* ── CHANNEL SELECT SCREEN ── */
+#channel-screen { position: fixed; inset: 0; background: linear-gradient(160deg, #1a3a1a 0%, #2d5a2d 50%, #1a3a1a 100%); background-size: 250% 250%; animation: honeyBgFlow 16s ease-in-out infinite; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 999; padding: 24px; }
+#channel-screen.visible { display: flex; }
+.channel-logo { font-size: 56px; margin-bottom: 10px; }
+.channel-title { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.channel-subtitle { font-size: 13px; color: #a8d5a8; margin-bottom: 32px; text-align: center; }
+.channel-card { background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 340px; }
+.channel-label { font-size: 12px; font-weight: 600; color: #a8d5a8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; text-align: center; }
+.channel-buttons { display: flex; gap: 14px; }
+.btn-channel { flex: 1; padding: 18px 10px; background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25); border-radius: 10px; color: #fff; font-size: 18px; font-weight: 700; cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.1s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.btn-channel:active { transform: scale(0.97); }
+.btn-channel:hover { background: rgba(255,255,255,0.20); border-color: #7ec87e; }
+.btn-channel .ch-icon { font-size: 36px; }
+.btn-channel .ch-num { font-size: 22px; font-weight: 800; color: #7ec87e; }
+.btn-channel .ch-id { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 400; margin-top: 2px; }
+.btn-back-ch { width: 100%; margin-top: 16px; padding: 11px; background: transparent; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; color: rgba(255,255,255,0.6); font-size: 14px; cursor: pointer; transition: background 0.2s; }
+.btn-back-ch:active { background: rgba(255,255,255,0.08); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #111; display: flex; z-index: 500; border-top: 2px solid #333; }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 4px 8px; background: none; border: none; color: #888; font-size: 11px; font-weight: 600; cursor: pointer; gap: 3px; transition: color 0.2s; letter-spacing: 0.3px; }
+.nav-btn.active { color: #f0a500; }
+.nav-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── HEADER ── */
+.header { background: #d0d0d0; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #b0b0b0; gap: 8px; }
+.header-title { font-size: 20px; font-weight: 700; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.header-title span.blue { color: #1a6dcc; }
+.header-title span.black { color: #111; }
+.badge { background: #333; color: #fff; font-size: 14px; font-weight: 700; padding: 4px 9px; border-radius: 6px; flex-shrink: 0; white-space: nowrap; }
+.header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.top-bar-sticky { position: sticky; top: 0; z-index: 500; }
+.refresh-top { background: none; border: none; font-size: 21px; cursor: pointer; color: #555; padding: 2px 4px; transition: transform 0.4s; flex-shrink: 0; }
+.refresh-top.spinning { animation: spin 0.6s linear; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.btn-logout { background: none; border: 1px solid #aaa; border-radius: 6px; padding: 5px 8px; font-size: 11px; color: #555; cursor: pointer; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+.btn-logout:active { background: #ccc; }
+.theme-toggle-top { background: #333; border: none; border-radius: 50%; width: 27px; height: 27px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: background 0.2s, transform 0.15s; flex-shrink: 0; }
+.theme-toggle-top:active { transform: scale(0.9); background: #555; }
+.appearance-card { background: #ddd; margin: 0 8px 0; border-radius: 10px; padding: 4px 16px; }
+.appearance-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; gap: 10px; }
+.appearance-label { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: #222; }
+
+/* ── CHANNEL SWITCH PILL ── */
+.channel-switch-bar { display: none; background: #c8c8c8; padding: 8px 16px; border-bottom: 1px solid #b0b0b0; justify-content: center; align-items: center; gap: 10px; }
+.channel-switch-bar.visible { display: flex; }
+.ch-pill { display: flex; position: relative; background: #b0b0b0; border-radius: 20px; overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+.ch-pill-indicator { position: absolute; top: 0; bottom: 0; left: 0; width: 0; background: #333; border-radius: 20px; transition: transform 0.28s cubic-bezier(.4,0,.2,1), width 0.28s cubic-bezier(.4,0,.2,1); z-index: 0; pointer-events: none; }
+.ch-pill-btn { position: relative; z-index: 1; padding: 6px 16px; font-size: 13px; font-weight: 700; color: #555; border: none; background: transparent; cursor: pointer; transition: color 0.2s; border-radius: 20px; white-space: nowrap; flex-shrink: 0; overflow: hidden; }
+.ch-pill-btn.active { background: transparent; color: #fff; }
+.ch-switch-label { font-size: 12px; color: #666; font-weight: 600; }
+
+/* ── TAB PAGES ── */
+.tab-page { display: none; }
+.tab-page.active { display: block; animation: tabFadeIn 0.28s ease; }
+@keyframes tabFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── MAIN CARDS ── */
+.weight-card { background: #ececec; padding: 14px 16px 10px; border-bottom: 2px solid #ccc; display: flex; flex-direction: column; align-items: center; }
+.weight-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.hive-icon { font-size: 48px; }
+.weight-value { font-size: 38px; font-weight: 700; color: #111; letter-spacing: -1px; }
+.diff-row { width: 100%; text-align: center; font-size: 18px; color: #222; margin: 2px 0; }
+.diff-row b { font-size: 18px; font-weight: 700; }
+.diff-pos { color: #1a7a1a; }
+.diff-neg { color: #cc1a1a; }
+.diff-row-sub { color: #666; }
+.last-time { font-size: 13px; color: #444; font-weight: 600; }
+.last-time-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.conn-badge { display: none; align-items: center; gap: 3px; font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: 10px; line-height: 1.5; white-space: nowrap; cursor: pointer; }
+.conn-badge:active { transform: scale(0.94); }
+.conn-badge.conn-wifi { background: #dbf0ff; color: #0a5fa0; border: 1px solid #8fcdf2; }
+.conn-badge.conn-gsm { background: #fdebc8; color: #8a5800; border: 1px solid #f0c878; }
+.conn-badge-sm { font-size: 9px; padding: 1px 6px; margin-top: 3px; }
+.sensors-card { background: #d8d8d8; margin: 8px 8px 0; border-radius: 10px; padding: 14px 16px; }
+.sensor-icon { font-size: 28px; width: 36px; text-align: center; }
+.sensor-value { font-size: 24px; font-weight: 700; color: #111; }
+.sensor-row-double { display: flex; gap: 20px; }
+.sensor-half { display: flex; align-items: center; gap: 8px; flex: 1; }
+.sensor-val-wrap { display: flex; align-items: center; gap: 4px; }
+.trend-arrow { font-size: 18px; font-weight: 900; line-height: 1; }
+.trend-up   { color: #1a7a1a; }
+.trend-down { color: #cc1a1a; }
+.trend-eq   { color: #999; font-size: 14px; }
+.toggle-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #bbb; font-size: 14px; font-weight: 600; color: #333; }
+.toggle { position: relative; width: 48px; height: 26px; }
+.toggle input { display: none; }
+.toggle-slider { position: absolute; inset: 0; background: #aaa; border-radius: 26px; cursor: pointer; transition: background 0.3s; }
+.toggle-slider:before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.3s; }
+.toggle input:checked + .toggle-slider { background: #e05050; }
+.toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+.prev-panel { background: #c8c8c8; margin: 0 8px 0; border-radius: 0 0 10px 10px; padding: 10px 16px; display: none; border-top: 1px solid #bbb; }
+.prev-panel.visible { display: block; }
+.prev-title { font-size: 11px; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.prev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.prev-item { background: #d8d8d8; border-radius: 6px; padding: 7px 10px; }
+.prev-item-label { font-size: 14px; color: #888; margin-bottom: 2px; }
+.prev-item-val { font-size: 15px; font-weight: 700; color: #333; }
+.prev-item-time { font-size: 14px; color: #aaa; margin-top: 1px; }
+.prev-weight-body { display: flex; align-items: stretch; justify-content: center; gap: 6px; flex-wrap: nowrap; }
+.prev-weight-row { text-align: center; }
+.prev-weight-box { border: 2px solid #999; border-radius: 6px; padding: 6px 4px; text-align: center; background: #d0d0d0; flex: 1; min-width: 0; overflow: hidden; }
+.prev-weight-box.prev-weight-box-main { flex: 1.6; }
+.prev-weight-box .prev-item-val { font-size: 13px; white-space: nowrap; }
+.prev-weight-box #prev-weight-diff { font-size: 13px !important; white-space: nowrap; }
+.tare-card { background: #d8d8d8; margin: 8px 8px 0; border-radius: 10px; padding: 12px 16px; }
+.tare-buttons { display: flex; align-items: center; gap: 10px; }
+.btn-tare { background: #999; color: #111; border: none; border-radius: 6px; padding: 10px 20px; font-size: 16px; font-weight: 700; cursor: pointer; flex-shrink: 0; transition: background 0.2s, opacity 0.2s; }
+.btn-tare:active { background: #777; }
+.btn-tare:disabled { background: #ccc; color: #999; cursor: not-allowed; opacity: 0.6; }
+.tare-diff { font-size: 22px; font-weight: 700; color: #111; flex: 1; text-align: center; }
+.btn-clear { background: #111; color: #fff; border: none; border-radius: 6px; padding: 10px 20px; font-size: 16px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+.btn-clear:active { background: #444; }
+.tare-ref { text-align: center; font-size: 13px; color: #555; margin-top: 8px; }
+.chart-card { background: #fff; margin: 8px 8px 0; border-radius: 10px; padding: 12px 10px; overflow: hidden; }
+.chart-title { font-size: 12px; color: #888; margin-bottom: 8px; text-align: center; letter-spacing: 1px; text-transform: uppercase; }
+.chart-wrap { position: relative; height: 220px; }
+.loading-msg { text-align: center; padding: 60px 0; color: #aaa; font-size: 13px; }
+.error-msg { text-align: center; padding: 30px 0; color: #cc2200; font-size: 13px; }
+
+/* ── SKELETON LOADERS (shimmer) ── */
+.skeleton-block { display: none; }
+.skeleton-block.active { display: block; }
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #dcdcdc;
+  border-radius: 6px;
+}
+.skeleton::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%);
+  transform: translateX(-100%);
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer { 100% { transform: translateX(100%); } }
+
+.skel-scale-wrap { background: #ececec; padding: 14px 16px; border-radius: 10px 10px 0 0; }
+.skel-weight-value { width: 150px; height: 34px; margin: 0 auto 12px; }
+.skel-line { height: 13px; margin: 8px auto; }
+.skel-line.w50 { width: 50%; }
+.skel-line.w65 { width: 65%; }
+.skel-sensors-wrap { background: #d8d8d8; margin: 8px 8px 0; border-radius: 10px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.skel-sensor-box { height: 40px; }
+.skel-chart-wrap { background: #fff; margin: 8px 8px 0; border-radius: 10px; padding: 12px 10px; }
+.skel-chart-title { width: 55%; height: 11px; margin: 0 auto 12px; }
+.skel-chart-box { height: 190px; }
+.skel-graph-box { height: 160px; margin-bottom: 10px; }
+
+html.dark-mode .skeleton { background: #2a2a2a; }
+html.dark-mode .skeleton::after { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0) 100%); }
+html.dark-mode .skel-scale-wrap { background: #1a1a1a; }
+html.dark-mode .skel-sensors-wrap { background: #1e1e1e; }
+html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
+
+/* ── BLINK / COLORS ── */
+@keyframes blink-red { 0%, 100% { color: #cc1a1a; opacity: 1; } 50% { color: #ff0000; opacity: 0.25; } }
+.blink-alert { animation: blink-red 0.7s ease-in-out infinite !important; }
+@keyframes weight-pulse-glow {
+  0% { text-shadow: 0 0 0px rgba(62,207,62,0); }
+  30% { text-shadow: 0 0 16px rgba(62,207,62,0.9); }
+  100% { text-shadow: 0 0 0px rgba(62,207,62,0); }
+}
+.weight-pulse { animation: weight-pulse-glow 0.9s ease-out; }
+/* ── RIPPLE EFFECT (Material-style) ── */
+.ripple-span { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,0.5); animation: rippleAnim 0.6s ease-out; pointer-events: none; }
+@keyframes rippleAnim { to { transform: scale(2.6); opacity: 0; } }
+.btn-login, .btn-channel, .btn-back-ch, .nav-btn, .ch-pill-btn, .btn-tare, .btn-logout, .theme-toggle-top, .btn-notif, .btn-clear, .compare-ch-btn, .range-mode-btn, .btn-confirm-yes, .btn-confirm-no, .refresh-top, .btn-notes-clear {
+  position: relative; overflow: hidden;
+}
+@keyframes blink-blue { 0%, 100% { color: #1a6dcc; opacity: 1; } 50% { color: #55aaff; opacity: 0.3; } }
+.blink-blue { animation: blink-blue 0.9s ease-in-out infinite !important; }
+.temp-cold { color: #1a6dcc !important; }
+
+/* ── CONFIRM MODAL ── */
+#confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2100; display: none; align-items: center; justify-content: center; padding: 24px; }
+#confirm-overlay.visible { display: flex; }
+.confirm-box { background: #fff; border-radius: 14px; padding: 28px 24px; max-width: 300px; width: 100%; box-shadow: 0 16px 48px rgba(0,0,0,0.35); text-align: center; animation: alertPop 0.2s cubic-bezier(.34,1.56,.64,1); }
+.confirm-msg { font-size: 16px; font-weight: 600; color: #222; margin-bottom: 22px; line-height: 1.5; }
+.confirm-btns { display: flex; gap: 12px; }
+.btn-confirm-yes { flex: 1; padding: 12px; background: #cc1a1a; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-confirm-yes:active { background: #aa1010; }
+.btn-confirm-no  { flex: 1; padding: 12px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-confirm-no:active { background: #ccc; }
+
+/* ── ALERT MODAL ── */
+#alert-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 24px; }
+#alert-overlay.visible { display: flex; }
+.alert-box { background: #fff; border-radius: 16px; padding: 0; max-width: 340px; width: 100%; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: alertPop 0.25s cubic-bezier(.34,1.56,.64,1); }
+@keyframes alertPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.alert-header { background: #cc1a1a; padding: 20px 24px 16px; text-align: center; }
+.alert-icon { font-size: 48px; display: block; margin-bottom: 8px; animation: blink-red 0.7s ease-in-out infinite; }
+.alert-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
+.alert-body { padding: 20px 24px; text-align: center; }
+.alert-msg { font-size: 16px; color: #222; font-weight: 600; line-height: 1.5; margin-bottom: 8px; white-space: pre-line; }
+.alert-detail { font-size: 13px; color: #888; margin-bottom: 20px; }
+.btn-alert-ok { width: 100%; padding: 13px; background: #cc1a1a; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-alert-ok:active { background: #aa1010; }
+
+/* ── GRAPHS TAB ── */
+.graphs-header { background: #d0d0d0; padding: 10px 16px; border-bottom: 1px solid #bbb; }
+.graphs-range-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.graphs-range-label { font-size: 12px; font-weight: 700; color: #555; letter-spacing: 0.5px; text-transform: uppercase; }
+.range-mode-pill { display: flex; background: #b8b8b8; border-radius: 20px; overflow: hidden; }
+.range-mode-btn { padding: 5px 14px; font-size: 12px; font-weight: 700; color: #555; border: none; background: transparent; cursor: pointer; border-radius: 20px; transition: background 0.2s, color 0.2s; }
+.range-mode-btn.active { background: #333; color: #fff; }
+.range-input-row { display: flex; gap: 8px; align-items: center; }
+.range-input { width: 70px; padding: 6px 8px; border: 1px solid #bbb; border-radius: 6px; font-size: 14px; font-weight: 600; text-align: center; background: #fff; }
+.range-label-sm { font-size: 12px; color: #666; }
+.btn-range-apply { padding: 6px 14px; background: #4a9e4a; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.btn-range-apply:active { background: #3a8a3a; }
+.graphs-compare-row { display: none; border-top: 1px solid #bbb; margin-top: 10px; padding-top: 10px; }
+.compare-toggle-line { display: flex; align-items: center; gap: 6px; }
+.compare-channels-row { display: none; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.compare-ch-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; color: #555; border: 1px solid #b0b0b0; background: #fff; cursor: pointer; border-radius: 20px; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.compare-ch-btn.active { background: #4a7fc9; border-color: #4a7fc9; color: #fff; }
+.graph-toggles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 4px; padding: 10px 12px; background: #d8d8d8; border-bottom: 1px solid #bbb; }
+.gtoggle-item { display: flex; align-items: center; gap: 6px; }
+.gt-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 16px; line-height: 1; flex-shrink: 0; }
+.gtoggle-label { font-size: 13px; font-weight: 600; color: #333; display: inline-flex; align-items: center; gap: 4px; }
+.gtoggle { position: relative; width: 38px; height: 20px; }
+.gtoggle input { display: none; }
+.gtoggle-slider { position: absolute; inset: 0; background: #aaa; border-radius: 20px; cursor: pointer; transition: background 0.3s; }
+.gtoggle-slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.3s; }
+.gtoggle input:checked + .gtoggle-slider { background: #4a9e4a; }
+.gtoggle input:checked + .gtoggle-slider:before { transform: translateX(18px); }
+.graph-block { background: #fff; margin: 8px 8px 0; border-radius: 10px; padding: 12px 10px; overflow: hidden; animation: graphBlockIn 0.42s ease both; }
+@keyframes graphBlockIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.graph-block-title { font-size: 11px; color: #888; margin-bottom: 8px; text-align: center; letter-spacing: 1px; text-transform: uppercase; }
+.graph-block-wrap { position: relative; height: 180px; }
+.graph-loading { text-align: center; padding: 40px 0; color: #bbb; font-size: 12px; }
+
+/* ── INFO TAB ── */
+.info-section-title { font-size: 16px; font-weight: 800; color: #111; padding: 14px 16px 8px; background: #e8e8e8; border-top: 2px solid #ccc; }
+.info-card { background: #ddd; margin: 0 8px 0; border-radius: 10px; padding: 14px 16px; }
+.info-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #ccc; align-items: flex-start; }
+.info-row:last-child { border-bottom: none; }
+.info-row-label { font-size: 14px; font-weight: 700; color: #333; min-width: 90px; }
+.info-row-val { font-size: 14px; color: #111; font-weight: 600; flex: 1; }
+.info-row-val.expired { color: #cc1a1a; font-weight: 700; }
+.info-row-val.expired-ok { color: #1a7a1a; font-weight: 700; }
+.info-expired-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; margin-left: 6px; }
+.expired-warn { background: #ffdddd; color: #cc1a1a; }
+.expired-ok-badge { background: #ddffdd; color: #1a7a1a; }
+
+/* ── NOTES ── */
+.notes-wrap { margin: 8px 8px 0; }
+.notes-textarea { width: 100%; min-height: 110px; padding: 12px 14px; background: #fff; border: 1px solid #ccc; border-radius: 10px; font-size: 15px; font-family: inherit; color: #222; resize: vertical; outline: none; transition: border 0.2s; }
+.notes-textarea:focus { border-color: #4a9e4a; }
+.notes-btn-row { display: flex; gap: 10px; margin-top: 8px; }
+.btn-notes-save { flex: 1; padding: 11px; background: #4a9e4a; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-notes-save:active { background: #3a8a3a; }
+.btn-notes-clear { padding: 11px 18px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-notes-clear:active { background: #444; }
+.notes-saved-msg { font-size: 12px; color: #4a9e4a; text-align: center; margin-top: 6px; min-height: 18px; font-weight: 600; }
+
+/* ── SIM STATUS BANNER ── */
+#sim-status-banner { display: none; margin: 10px 8px 0; border-radius: 10px; padding: 12px 16px; align-items: center; gap: 10px; }
+#sim-status-banner.sim-ok  { display: flex; background: #d4f5d4; border: 1.5px solid #4a9e4a; }
+#sim-status-banner.sim-err { display: flex; background: #ffd4d4; border: 1.5px solid #cc1a1a; }
+.sim-banner-icon { font-size: 26px; flex-shrink: 0; }
+.sim-banner-text { font-size: 14px; font-weight: 700; }
+.sim-banner-text.ok  { color: #1a7a1a; }
+.sim-banner-text.err { color: #cc1a1a; }
+
+/* ── FLOATING SIM TOAST (Ζυγαριά tab) ── */
+#sim-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.85); background: #fff; border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; gap: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.3); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.35s, transform 0.35s; max-width: 300px; width: 88%; }
+#sim-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#sim-toast.toast-ok  { border-left: 5px solid #4a9e4a; }
+#sim-toast.toast-err { border-left: 5px solid #cc1a1a; }
+.sim-toast-icon { font-size: 32px; flex-shrink: 0; }
+.sim-toast-msg { font-size: 14px; font-weight: 700; line-height: 1.4; }
+.sim-toast-msg.ok  { color: #1a7a1a; }
+.sim-toast-msg.err { color: #cc1a1a; }
+
+#conn-info-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.85); background: #fff; border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.3); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; max-width: 280px; width: 86%; border-left: 5px solid #0a5fa0; }
+#conn-info-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#conn-info-toast.conn-toast-gsm { border-left-color: #8a5800; }
+.conn-info-toast-icon { font-size: 28px; flex-shrink: 0; }
+.conn-info-toast-msg { font-size: 14px; font-weight: 700; line-height: 1.4; color: #222; }
+/* ── NOTIFICATIONS ── */
+.notif-wrap { margin: 0 10px 4px; background: #fff; border-radius: 12px; padding: 14px 16px; border: 1px solid #ddd; }
+.notif-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+.btn-notif { width: 100%; padding: 13px; background: #555; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; cursor: pointer; transition: background 0.2s; }
+.notif-info { font-size: 12px; color: #888; text-align: center; margin-top: 8px; min-height: 16px; }
+/* ── HUMIDITY TOAST ── */
+#hum-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) scale(0.88); background: #1a6dcc; color: #fff; border-radius: 12px; padding: 12px 20px; font-size: 14px; font-weight: 700; text-align: center; max-width: 300px; width: 88%; box-shadow: 0 8px 28px rgba(26,109,204,0.45); z-index: 1600; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; line-height: 1.4; }
+#hum-toast.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+/* ── PUSH TOAST ── */
+#push-toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a3a1a; color: #fff; border-radius: 12px; padding: 14px 20px; max-width: 340px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.3); z-index: 1600; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; display: flex; align-items: flex-start; gap: 12px; }
+#push-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.push-toast-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+.push-toast-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.push-toast-msg { font-size: 13px; opacity: 0.85; line-height: 1.4; }
+/* ── DARK MODE ── */
+/* ── Ομαλή μετάβαση χρωμάτων στο dark mode ── */
+html, body, .header, .weight-card, .sensors-card, .tare-card, .chart-card, .info-card, .info-section-title,
+.appearance-card, .bottom-nav, .nav-btn, .theme-toggle-top, .channel-switch-bar, .ch-pill, .ch-pill-btn,
+.notif-wrap, .graphs-header, .graph-block, .prev-panel, .prev-item, .notes-textarea, .range-input,
+.range-mode-pill, .compare-ch-btn, .weight-value, .sensor-value, .diff-row, .last-time, .btn-logout,
+.badge, .refresh-top {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+html.dark-mode body { background: #121212; color: #e6e6e6; }
+html.dark-mode .header { background: #1c1c1c; border-bottom-color: #333; }
+html.dark-mode .header-title span.black { color: #f0f0f0; }
+html.dark-mode .header-title span.blue { color: #4da3ff; }
+html.dark-mode .badge { background: #444; }
+html.dark-mode .refresh-top { color: #bbb; }
+html.dark-mode .btn-logout { border-color: #555; color: #ccc; }
+html.dark-mode .btn-logout:active { background: #333; }
+html.dark-mode .theme-toggle-top { background: #2a2a2a; }
+html.dark-mode .theme-toggle-top:active { background: #444; }
+html.dark-mode .channel-switch-bar { background: #1e1e1e; border-bottom-color: #333; }
+html.dark-mode .ch-pill { background: #2a2a2a; }
+html.dark-mode .ch-pill-indicator { background: #4a9e4a; }
+html.dark-mode .ch-pill-btn { color: #bbb; }
+html.dark-mode .ch-pill-btn.active { background: transparent; color: #fff; }
+html.dark-mode .ch-switch-label { color: #999; }
+html.dark-mode .weight-card { background: #1a1a1a; border-bottom-color: #2e2e2e; }
+html.dark-mode .weight-value { color: #f5f5f5; }
+html.dark-mode .diff-row { color: #ddd; }
+html.dark-mode .diff-row-sub { color: #999; }
+html.dark-mode .diff-pos { color: #3ecf3e; }
+html.dark-mode .diff-neg { color: #ff5c5c; }
+html.dark-mode .last-time { color: #aaa; }
+html.dark-mode .sensors-card { background: #1e1e1e; }
+html.dark-mode .sensor-value { color: #f0f0f0; }
+html.dark-mode .trend-up { color: #3ecf3e; }
+html.dark-mode .trend-down { color: #ff5c5c; }
+html.dark-mode .trend-eq { color: #888; }
+html.dark-mode .toggle-row { color: #ddd; border-top-color: #333; }
+html.dark-mode .prev-panel { background: #1e1e1e; border-top-color: #333; }
+html.dark-mode .prev-title { color: #999; }
+html.dark-mode .prev-item { background: #262626; }
+html.dark-mode .prev-item-label { color: #999; }
+html.dark-mode .prev-item-val { color: #eee; }
+html.dark-mode .prev-item-time { color: #888; }
+html.dark-mode .prev-weight-box { border-color: #444; background: #232323; }
+html.dark-mode .tare-card { background: #1e1e1e; }
+html.dark-mode .btn-tare { background: #444; color: #eee; }
+html.dark-mode .btn-tare:disabled { background: #2a2a2a; color: #666; }
+html.dark-mode .tare-diff { color: #f0f0f0; }
+html.dark-mode .btn-clear { background: #333; }
+html.dark-mode .btn-clear:active { background: #555; }
+html.dark-mode .tare-ref { color: #999; }
+html.dark-mode .chart-card { background: #1a1a1a; }
+html.dark-mode .chart-title { color: #999; }
+html.dark-mode .loading-msg { color: #777; }
+html.dark-mode .info-section-title { color: #f0f0f0; background: #121212; border-top-color: #2e2e2e; }
+html.dark-mode .info-card { background: #1e1e1e; }
+html.dark-mode .info-row { border-bottom-color: #333; }
+html.dark-mode .info-row-label { color: #ddd; }
+html.dark-mode .info-row-val { color: #eee; }
+html.dark-mode .appearance-card { background: #1e1e1e; }
+html.dark-mode .appearance-label { color: #eee; }
+html.dark-mode .notes-textarea { background: #1a1a1a; border-color: #333; color: #eee; }
+html.dark-mode .btn-notes-clear { background: #333; }
+html.dark-mode .btn-notes-clear:active { background: #555; }
+html.dark-mode .notif-wrap { background: #1a1a1a; border-color: #333; }
+html.dark-mode .notif-desc { color: #aaa; }
+html.dark-mode .notif-info { color: #999; }
+html.dark-mode .graphs-header { background: #1c1c1c; border-bottom-color: #333; }
+html.dark-mode .graphs-range-label { color: #aaa; }
+html.dark-mode .range-mode-pill { background: #2a2a2a; }
+html.dark-mode .range-mode-btn { color: #bbb; }
+html.dark-mode .range-mode-btn.active { background: #4a9e4a; color: #fff; }
+html.dark-mode .range-input { background: #1a1a1a; border-color: #333; color: #eee; }
+html.dark-mode .range-label-sm { color: #999; }
+html.dark-mode .graph-toggles { background: #1e1e1e; border-bottom-color: #333; }
+html.dark-mode .gtoggle-label { color: #ddd; }
+html.dark-mode .graphs-compare-row { border-top-color: #333; }
+html.dark-mode .compare-ch-btn { background: #2a2a2a; border-color: #444; color: #bbb; }
+html.dark-mode .compare-ch-btn.active { background: #4a7fc9; border-color: #4a7fc9; color: #fff; }
+html.dark-mode .graph-block { background: #1a1a1a; }
+html.dark-mode .graph-block-title { color: #999; }
+html.dark-mode .graph-loading { color: #777; }
+html.dark-mode .confirm-box { background: #232323; }
+html.dark-mode .confirm-msg { color: #eee; }
+html.dark-mode .btn-confirm-no { background: #333; color: #eee; }
+html.dark-mode .btn-confirm-no:active { background: #444; }
+html.dark-mode .alert-box { background: #232323; }
+html.dark-mode .alert-msg { color: #eee; }
+html.dark-mode .alert-detail { color: #999; }
+html.dark-mode #sim-toast { background: #232323; }
+html.dark-mode #conn-info-toast { background: #232323; }
+html.dark-mode .conn-info-toast-msg { color: #eee; }
+html.dark-mode .sim-toast-msg.ok { color: #3ecf3e; }
+html.dark-mode .sim-toast-msg.err { color: #ff5c5c; }
+html.dark-mode #sim-status-banner.sim-ok { background: #1c3a1c; border-color: #4a9e4a; }
+html.dark-mode #sim-status-banner.sim-err { background: #3a1c1c; border-color: #cc1a1a; }
+html.dark-mode .sim-banner-text.ok { color: #6fe06f; }
+html.dark-mode .sim-banner-text.err { color: #ff8080; }
+html.dark-mode .info-row-val.expired { color: #ff5c5c; }
+html.dark-mode .info-row-val.expired-ok { color: #6fe06f; }
+html.dark-mode .expired-warn { background: #3a1c1c; color: #ff8080; }
+html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-logo">🍯</div>
+  <div class="login-ibee">iBeeScale</div>
+  <div class="login-title">Ζυγαριά Κυψέλης</div>
+  <div class="login-subtitle">Παρακαλώ συνδεθείτε για να συνεχίσετε</div>
+  <div class="login-card">
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="inp-user" placeholder="Εισάγετε username" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="inp-pass" placeholder="Εισάγετε password" autocomplete="current-password">
+    </div>
+    <label class="remember-row">
+      <input type="checkbox" id="chk-remember">
+      <span class="remember-box"></span>
+      <span class="remember-label">Να με θυμάσαι</span>
+    </label>
+    <div class="login-loading" id="login-loading"></div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
+  </div>
+  <div class="login-footer">
+    <div class="login-version">ver. 15.8.0</div>
+    <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
+  </div>
+</div>
+
+<!-- ── CHANNEL SELECT SCREEN ── -->
+<div id="channel-screen">
+  <div class="channel-logo">🍯</div>
+  <div class="channel-title">Επιλογή Κυψέλης</div>
+  <div class="channel-subtitle">Βρέθηκαν 2 κανάλια.<br>Επιλέξτε ποιο να παρακολουθήσετε.</div>
+  <div class="channel-card">
+    <div class="channel-label">Ποια κυψέλη θέλετε;</div>
+    <div class="channel-buttons">
+      <button class="btn-channel" onclick="selectChannel(0)">
+        <span class="ch-icon">🍯</span>
+        <span class="ch-num">No 1</span>
+        <span class="ch-id" id="ch-id-0">—</span>
+      </button>
+      <button class="btn-channel" onclick="selectChannel(1)">
+        <span class="ch-icon">🍯</span>
+        <span class="ch-num">No 2</span>
+        <span class="ch-id" id="ch-id-1">—</span>
+      </button>
+    </div>
+    <button class="btn-back-ch" onclick="goBackToLogin()">← Πίσω στη σύνδεση</button>
+  </div>
+</div>
+
+<!-- ── ALERT MODAL ── -->
+<div id="alert-overlay">
+  <div class="alert-box">
+    <div class="alert-header">
+      <span class="alert-icon">⚠️</span>
+      <div class="alert-title" id="alert-title-text">ΕΙΔΟΠΟΙΗΣΗ ΖΥΓΑΡΙΑΣ</div>
+    </div>
+    <div class="alert-body">
+      <div class="alert-msg" id="alert-msg-text"></div>
+      <div class="alert-detail" id="alert-detail"></div>
+      <button class="btn-alert-ok" onclick="dismissAlert()">Κατάλαβα</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM MODAL ── -->
+<div id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirm-msg">Θέλετε να διαγραφεί η μέτρηση;</div>
+    <div class="confirm-btns">
+      <button class="btn-confirm-yes" id="confirm-yes-btn" onclick="confirmAction(true)">Ναι</button>
+      <button class="btn-confirm-no"  onclick="confirmAction(false)">Όχι</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SIM TOAST (floating, 4 sec) ── -->
+<div id="sim-toast">
+  <span class="sim-toast-icon" id="sim-toast-icon">📶</span>
+  <span class="sim-toast-msg" id="sim-toast-msg"></span>
+</div>
+
+<!-- ── CONN INFO TOAST (floating comment when tapping a WiFi/GSM badge) ── -->
+<div id="conn-info-toast">
+  <span class="conn-info-toast-icon" id="conn-info-toast-icon">📶</span>
+  <span class="conn-info-toast-msg" id="conn-info-toast-msg"></span>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="app" style="display:none">
+
+  <!-- HEADER (σταθερό κατά το scroll) -->
+  <div class="top-bar-sticky">
+    <div class="header">
+      <div class="header-title">
+        <span class="blue" id="hdr-name">—</span>
+        <span class="black"> Ζυγαριά</span>
+      </div>
+      <div class="badge" id="hdr-badge">—</div>
+      <div class="header-right">
+        <button class="theme-toggle-top" id="theme-toggle-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+        <button class="refresh-top" id="refresh-btn" onclick="doRefresh()" title="Ανανέωση">↻</button>
+        <button class="btn-logout" onclick="doLogout()">Έξοδος</button>
+      </div>
+    </div>
+    <div class="channel-switch-bar" id="channel-switch-bar">
+      <span class="ch-switch-label">Κυψέλη:</span>
+      <div class="ch-pill" id="ch-pill-container"></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: ΖΥΓΑΡΙΑ ══ -->
+  <div id="tab-scale" class="tab-page active">
+    <!-- Skeleton loader (εμφανίζεται μόνο στην πρώτη φόρτωση, πριν έρθουν δεδομένα) -->
+    <div class="skeleton-block active" id="skel-scale">
+      <div class="skel-scale-wrap">
+        <div class="skeleton skel-weight-value"></div>
+        <div class="skeleton skel-line w50"></div>
+        <div class="skeleton skel-line w65"></div>
+      </div>
+      <div class="skel-sensors-wrap">
+        <div class="skeleton skel-sensor-box"></div>
+        <div class="skeleton skel-sensor-box"></div>
+        <div class="skeleton skel-sensor-box"></div>
+        <div class="skeleton skel-sensor-box"></div>
+      </div>
+      <div class="skel-chart-wrap">
+        <div class="skeleton skel-chart-title"></div>
+        <div class="skeleton skel-chart-box"></div>
+      </div>
+    </div>
+    <div id="scale-live-content" style="display:none">
+    <div class="weight-card">
+      <div class="weight-row">
+        <div class="hive-icon">⚖️</div>
+        <div class="sensor-val-wrap" style="justify-content:center;gap:8px;">
+          <div class="weight-value" id="weight-main" style="font-size:34px;">—</div>
+          <span id="diff-prev" class="diff-pos" style="font-size:26px;font-weight:700;white-space:nowrap;"></span>
+        </div>
+      </div>
+      <div class="diff-row">Διαφορά Ημέρας : <b><span id="diff-day" class="diff-pos" style="font-size:22px;">—</span></b></div>
+      <div class="diff-row diff-row-sub" id="diff-sametime-row" style="font-size:14px;">Διαφορά χθεσινής ίδιας ώρας : <b><span id="diff-sametime" class="diff-pos" style="font-size:14px;">—</span></b></div>
+      <div class="diff-row" style="display:none;">Διαφορά Προηγ. Μέτρησης : <b><span id="diff-prev-hidden" class="diff-pos">—</span></b></div>
+      <div class="last-time-row">
+        <div class="last-time" id="last-time">Τελευταία μέτρηση: —</div>
+        <span class="conn-badge" id="conn-badge-last"></span>
+      </div>
+    </div>
+    <div class="sensors-card">
+      <div class="sensor-row-double">
+        <div class="sensor-half"><div class="sensor-icon">🌡️</div><div class="sensor-val-wrap"><div class="sensor-value" id="temp">—</div><span class="trend-arrow" id="arrow-temp"></span></div></div>
+        <div class="sensor-half"><div class="sensor-icon">💧</div><div class="sensor-val-wrap"><div class="sensor-value" id="hum">—</div><span class="trend-arrow" id="arrow-hum"></span></div></div>
+      </div>
+      <div class="sensor-row-double" style="margin-top:10px;">
+        <div class="sensor-half"><div class="sensor-icon">🔋</div><div class="sensor-val-wrap"><div class="sensor-value" id="bat">—</div><span class="trend-arrow" id="arrow-bat"></span></div></div>
+        <div class="sensor-half"><div class="sensor-icon">📶</div><div class="sensor-val-wrap"><div class="sensor-value" id="sig">—</div><span class="trend-arrow" id="arrow-sig"></span></div></div>
+      </div>
+      <div class="toggle-row">
+        <span>Προηγούμενες μετρήσεις</span>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-last" onchange="toggleLastReadings()">
+          <span class="toggle-slider"></span>
+        </label>
+        <span id="toggle-label">OFF</span>
+      </div>
+    </div>
+    <div class="prev-panel" id="prev-panel">
+      <div class="prev-title">Προηγούμενες μετρήσεις</div>
+      <div class="prev-grid">
+        <div class="prev-item prev-weight-row" style="grid-column:1/-1">
+          <div class="prev-item-label">⚖️ Βάρος</div>
+          <div class="prev-weight-body">
+            <div class="prev-weight-box prev-weight-box-main">
+              <div style="display:flex;align-items:center;gap:4px;justify-content:center;flex-wrap:nowrap;white-space:nowrap;">
+                <div class="prev-item-val" id="prev-weight">—</div>
+                <span id="prev-weight-diff" style="font-weight:700;font-size:13px;display:none;white-space:nowrap;"></span>
+              </div>
+              <div class="prev-item-time" id="prev-weight-time"></div>
+              <span class="conn-badge conn-badge-sm" id="conn-badge-prev-weight"></span>
+            </div>
+            <div id="prev-weight-diff-wrap" class="prev-weight-box" style="display:none;">
+              <div class="prev-item-val" id="prev-prevprev-weight">—</div>
+              <div id="prev-weight-diff-time" style="color:#aaa;font-size:12px;margin-top:1px;"></div>
+              <span class="conn-badge conn-badge-sm" id="conn-badge-prevprev-weight"></span>
+            </div>
+            <div id="prev-weight-p3-wrap" class="prev-weight-box" style="display:none;">
+              <div class="prev-item-val" id="prev-p3-weight">—</div>
+              <div id="prev-p3-weight-time" style="color:#aaa;font-size:12px;margin-top:1px;"></div>
+              <span class="conn-badge conn-badge-sm" id="conn-badge-p3-weight"></span>
+            </div>
+          </div>
+        </div>
+        <div class="prev-item"><div class="prev-item-label">🌡️ Θερμοκρασία</div><div class="prev-item-val" id="prev-temp">—</div><div class="prev-item-time" id="prev-temp-time"></div></div>
+        <div class="prev-item"><div class="prev-item-label">💧 Υγρασία</div><div class="prev-item-val" id="prev-hum">—</div><div class="prev-item-time" id="prev-hum-time"></div></div>
+        <div class="prev-item"><div class="prev-item-label">🔋 Μπαταρία</div><div class="prev-item-val" id="prev-bat">—</div><div class="prev-item-time" id="prev-bat-time"></div></div>
+        <div class="prev-item"><div class="prev-item-label">📶 Σήμα</div><div class="prev-item-val" id="prev-sig">—</div><div class="prev-item-time" id="prev-sig-time"></div></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Βάρος κυψέλης – Τελευταίες 20 μετρήσεις</div>
+      <div class="chart-wrap">
+        <div class="loading-msg" id="loading">Φόρτωση δεδομένων...</div>
+        <div class="error-msg" id="error" style="display:none"></div>
+        <canvas id="chart" style="display:none"></canvas>
+      </div>
+    </div>
+    </div><!-- end scale-live-content -->
+    <div class="tare-card">
+      <div class="tare-buttons">
+        <button class="btn-tare" id="btn-tare" onclick="doTare()">TARE</button>
+        <div class="tare-diff" id="tare-diff">—</div>
+        <button class="btn-clear" onclick="doClear()">clear</button>
+      </div>
+      <div class="tare-ref" id="tare-ref">Πατήστε TARE για να αποθηκεύσετε το τρέχον βάρος</div>
+    </div>
+  </div><!-- end tab-scale -->
+
+  <!-- ══ TAB: ΓΡΑΦΗΜΑΤΑ ══ -->
+  <div id="tab-graphs" class="tab-page">
+    <div class="graphs-header">
+      <div class="graphs-range-row">
+        <span class="graphs-range-label">Εύρος:</span>
+        <div class="range-mode-pill">
+          <button class="range-mode-btn active" id="rmode-count" onclick="setRangeMode('count')">Μετρήσεις</button>
+          <button class="range-mode-btn" id="rmode-date" onclick="setRangeMode('date')">Ημερομηνία</button>
+        </div>
+      </div>
+      <div id="range-count-row" class="range-input-row">
+        <span class="range-label-sm">Τελευταίες</span>
+        <input type="number" class="range-input" id="inp-count" value="20" min="5" max="200">
+        <span class="range-label-sm">μετρήσεις</span>
+        <button class="btn-range-apply" onclick="applyGraphRange()">Εφαρμογή</button>
+      </div>
+      <div id="range-date-row" class="range-input-row" style="display:none">
+        <span class="range-label-sm">Από</span>
+        <input type="date" class="range-input" id="inp-date-from" style="width:130px">
+        <span class="range-label-sm">Έως</span>
+        <input type="date" class="range-input" id="inp-date-to" style="width:130px">
+        <button class="btn-range-apply" onclick="applyGraphRange()">Εφαρμογή</button>
+      </div>
+      <div class="graphs-compare-row" id="graphs-compare-row">
+        <div class="compare-toggle-line">
+          <label class="gtoggle"><input type="checkbox" id="gt-compare" onchange="toggleCompareMode()"><span class="gtoggle-slider"></span></label>
+          <span class="gtoggle-label"><span class="gt-icon">🔀</span> Σύγκριση ζυγαριών</span>
+        </div>
+        <div id="compare-channels-row" class="compare-channels-row"></div>
+      </div>
+    </div>
+    <div class="graph-toggles">
+      <div class="gtoggle-item">
+        <label class="gtoggle"><input type="checkbox" id="gt-weight" checked onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
+        <span class="gtoggle-label"><span class="gt-icon">⚖️</span> Βάρος</span>
+      </div>
+      <div class="gtoggle-item">
+        <label class="gtoggle"><input type="checkbox" id="gt-temp" checked onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
+        <span class="gtoggle-label"><span class="gt-icon">🌡️</span> Θερμ.</span>
+      </div>
+      <div class="gtoggle-item">
+        <label class="gtoggle"><input type="checkbox" id="gt-sig" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
+        <span class="gtoggle-label"><span class="gt-icon">📶</span> Σήμα</span>
+      </div>
+      <div class="gtoggle-item">
+        <label class="gtoggle"><input type="checkbox" id="gt-hum" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
+        <span class="gtoggle-label"><span class="gt-icon">💧</span> Υγρασία</span>
+      </div>
+      <div class="gtoggle-item">
+        <label class="gtoggle"><input type="checkbox" id="gt-bat" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
+        <span class="gtoggle-label"><span class="gt-icon">🔋</span> Μπατ.</span>
+      </div>
+      <div class="gtoggle-item" id="gtoggle-conn-item" style="display:none;">
+        <label class="gtoggle"><input type="checkbox" id="gt-conn" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
+        <span class="gtoggle-label"><span class="gt-icon">📡</span> Σύνδεση</span>
+      </div>
+    </div>
+    <div class="skeleton-block active" id="skel-graphs">
+      <div class="skeleton skel-graph-box"></div>
+      <div class="skeleton skel-graph-box"></div>
+    </div>
+    <div id="graphs-container"></div>
+    <div id="graphs-nodata" style="display:none;text-align:center;padding:40px 0;color:#aaa;font-size:14px;">Φόρτωση γραφημάτων...</div>
+  </div><!-- end tab-graphs -->
+
+  <!-- ══ TAB: INFO ══ -->
+  <div id="tab-info" class="tab-page">
+    <div class="info-section-title">Εμφάνιση</div>
+    <div class="appearance-card">
+      <div class="appearance-row">
+        <span class="appearance-label"><span class="gt-icon" id="theme-row-icon">🌙</span> Σκοτεινό Θέμα (Dark Mode)</span>
+        <label class="toggle"><input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="info-section-title">Πληροφορίες</div>
+    <div class="info-card">
+      <div class="info-row"><span class="info-row-label">name :</span><span class="info-row-val" id="info-name">—</span></div>
+      <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
+      <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
+      <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.0</span></div>
+    </div>
+
+    <!-- SIM STATUS BANNER -->
+    <div id="sim-status-banner">
+      <span class="sim-banner-icon" id="sim-banner-icon">📶</span>
+      <span class="sim-banner-text" id="sim-banner-text"></span>
+    </div>
+
+    <div class="info-section-title">Σημειώσεις</div>
+    <div class="notes-wrap">
+      <textarea class="notes-textarea" id="notes-textarea" placeholder="Σημειώσεις ζυγαριάς..."></textarea>
+      <div class="notes-btn-row">
+        <button class="btn-notes-save" onclick="saveNotes()">💾 Save</button>
+        <button class="btn-notes-clear" onclick="clearNotes()">Clear</button>
+      </div>
+      <div class="notes-saved-msg" id="notes-saved-msg"></div>
+    </div>
+
+    <div class="info-section-title">Ειδοποιήσεις</div>
+    <div class="notif-wrap">
+      <div class="notif-desc">Λάβετε ειδοποίηση ακόμα και όταν η εφαρμογή είναι κλειστή:<br>• 📡 Νέα δεδομένα από τη ζυγαριά<br>• ⚠️ Μεγάλη πτώση βάρους (&gt;2.5 kg)<br>• 🔋 Χαμηλή μπαταρία (&lt;2.9v)</div>
+      <button class="btn-notif" id="notif-btn" onclick="window._requestNotificationPermission && window._requestNotificationPermission()">🔕 Ενεργοποίηση Ειδοποιήσεων</button>
+      <button class="btn-notif" id="notif-disable-btn" onclick="window._disableNotifications && window._disableNotifications()" style="display:none;margin-top:8px;background:#c0392b;">🔕 Απενεργοποίηση Ειδοποιήσεων</button>
+      <div class="notif-info" id="notif-info"></div>
+    </div>
+  </div><!-- end tab-info -->
+
+</div><!-- end app -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="nav-btn active" id="nav-scale" onclick="switchTab('scale')">
+    <svg viewBox="0 0 24 24"><path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z"/><path d="M8 12h8M12 8v8"/><path d="M5 3h14M5 21h14"/></svg>
+    Ζυγαριά
+  </button>
+  <button class="nav-btn" id="nav-graphs" onclick="switchTab('graphs')">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Γραφήματα
+  </button>
+  <button class="nav-btn" id="nav-info" onclick="switchTab('info')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+    Info
+  </button>
+</nav>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaBOlpwMBRYwCg6Hjd9v9KEu2HHi7BUDXhUcx9tgJxqLs9lhwtHdo3iyI7YFE-cX6ABg/exec';
+
+// ── JSONP fetch ──
+function fetchCSV() {
+  return new Promise((resolve, reject) => {
+    const cbName = 'jsonp_cb_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => { delete window[cbName]; document.body.removeChild(script); reject(new Error('Timeout')); }, 8000);
+    window[cbName] = function(data) { clearTimeout(timeout); delete window[cbName]; document.body.removeChild(script); resolve(data); };
+    script.src = APPS_SCRIPT_URL + '?callback=' + cbName;
+    script.onerror = () => { clearTimeout(timeout); delete window[cbName]; document.body.removeChild(script); reject(new Error('Αδυναμία φόρτωσης')); };
+    document.body.appendChild(script);
+  });
+}
+
+// ── JSONP generic call (χρησιμοποιείται για εγγραφή TARE στο Google Sheet) ──
+function fetchJSONP(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => { delete window[cbName]; document.body.removeChild(script); reject(new Error('Timeout')); }, 8000);
+    window[cbName] = function(data) { clearTimeout(timeout); delete window[cbName]; document.body.removeChild(script); resolve(data); };
+    const qs = new URLSearchParams(Object.assign({}, params, { callback: cbName })).toString();
+    script.src = APPS_SCRIPT_URL + '?' + qs;
+    script.onerror = () => { clearTimeout(timeout); delete window[cbName]; document.body.removeChild(script); reject(new Error('Αδυναμία φόρτωσης')); };
+    document.body.appendChild(script);
+  });
+}
+
+// ── Αποθήκευση / διαγραφή TARE στη στήλη G (1ο κανάλι) ή H (2ο κανάλι) του Google Sheet ──
+function saveTareToSheet(valueStr) {
+  fetchJSONP({ action: 'saveTare', user: currentUser, ch: String(activeChannelIndex), value: valueStr })
+    .then(res => { if (!res || !res.ok) console.warn('Αποτυχία αποθήκευσης TARE στο sheet:', res); })
+    .catch(err => console.warn('Σφάλμα αποθήκευσης TARE στο sheet:', err.message));
+}
+function clearTareFromSheet() {
+  fetchJSONP({ action: 'clearTare', user: currentUser, ch: String(activeChannelIndex) })
+    .then(res => { if (!res || !res.ok) console.warn('Αποτυχία διαγραφής TARE από το sheet:', res); })
+    .catch(err => console.warn('Σφάλμα διαγραφής TARE από το sheet:', err.message));
+}
+
+const USER_DISPLAY = {
+  'test1':  { name: 'Akis2', badge: 'No2' },
+  'nikos1': { name: 'Nikos', badge: 'No1' },
+};
+
+// ── Field mapping (ThingSpeak field N -> sensor) ──
+// Προεπιλογή: field2=θερμοκρασία, field3=υγρασία, field4=μπαταρία, field5=σήμα
+// Εξαιρέσεις ανά κανάλι (π.χ. nalban / 406938): διαφορετική αντιστοίχιση
+const DEFAULT_FIELD_MAP = { temp: 'field2', hum: 'field3', bat: 'field4', sig: 'field5' };
+const CHANNEL_FIELD_MAPS = {
+  '406938': { temp: 'field3', hum: 'field4', bat: 'field6', sig: 'field7' }, // nalban
+};
+function getFieldMap() {
+  return CHANNEL_FIELD_MAPS[CHANNEL] || DEFAULT_FIELD_MAP;
+}
+
+// ── Τύπος σύνδεσης αποστολής (field6): 11 = WiFi, 22 = GSM ──
+// Εξαίρεση: στο κανάλι nalban (406938) το field6 χρησιμοποιείται ήδη ως μπαταρία,
+// οπότε εκεί δεν εμφανίζουμε badge σύνδεσης.
+// ── DARK MODE ──
+function isDarkMode() {
+  return document.documentElement.classList.contains('dark-mode');
+}
+function chartAxisColor() { return isDarkMode() ? '#999' : '#888'; }
+function chartGridColor() { return isDarkMode() ? '#2a2a2a' : '#eee'; }
+function updateThemeToggleUI() {
+  const on = isDarkMode();
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = on ? '☀️' : '🌙';
+  const rowIcon = document.getElementById('theme-row-icon');
+  if (rowIcon) rowIcon.textContent = on ? '☀️' : '🌙';
+  const cb = document.getElementById('dark-mode-toggle');
+  if (cb) cb.checked = on;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', on ? '#0d0d0d' : '#1a3a1a');
+}
+function toggleDarkMode(forceValue) {
+  const next = typeof forceValue === 'boolean' ? forceValue : !isDarkMode();
+  document.documentElement.classList.toggle('dark-mode', next);
+  try { localStorage.setItem('darkMode', next ? '1' : '0'); } catch (e) {}
+  updateThemeToggleUI();
+  // Ανανέωση χρωμάτων στα ήδη σχεδιασμένα γραφήματα (Chart.js δεν ακολουθεί CSS)
+  if (typeof myChart !== 'undefined' && myChart) {
+    myChart.options.scales.x.ticks.color = chartAxisColor();
+    myChart.options.scales.y.ticks.color = chartAxisColor();
+    myChart.options.scales.x.grid.color = chartGridColor();
+    myChart.options.scales.y.grid.color = chartGridColor();
+    myChart.update();
+  }
+  if (typeof graphCharts !== 'undefined') {
+    Object.values(graphCharts).forEach(ch => {
+      if (!ch) return;
+      ch.options.scales.x.ticks.color = chartAxisColor();
+      ch.options.scales.y.ticks.color = chartAxisColor();
+      ch.options.scales.x.grid.color = chartGridColor();
+      ch.options.scales.y.grid.color = chartGridColor();
+      if (ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
+        ch.options.plugins.legend.labels.color = chartAxisColor();
+      }
+      ch.update();
+    });
+  }
+}
+document.addEventListener('DOMContentLoaded', updateThemeToggleUI);
+
+function isConnField6Available() {
+  return getFieldMap().bat !== 'field6';
+}
+// Ελέγχει αν υπάρχει ΚΑΠΟΥ έγκυρη τιμή field6 (11 ή 22) σε όλο το ιστορικό του καναλιού
+function hasAnyConnData() {
+  return isConnField6Available() && Array.isArray(allFeeds) && allFeeds.some(f => f.field6 === '11' || f.field6 === '22');
+}
+// Χρησιμοποιείται ΜΟΝΟ για τα badges στο tab Ζυγαριά (last-time / προηγούμενες μετρήσεις).
+// Αν το field6 δεν υπάρχει πουθενά στο ιστορικό, εμφανίζουμε ως προεπιλογή GSM.
+// Το tab Γραφήματα ΔΕΝ χρησιμοποιεί αυτή τη συνάρτηση, οπότε δεν επηρεάζεται από το fallback.
+function connInfo(feed) {
+  if (!feed || !isConnField6Available()) return null;
+  const v = String(feed.field6 || '').trim();
+  if (v === '11') return { icon: '📶', text: 'WiFi', cls: 'conn-wifi' };
+  if (v === '22') return { icon: '📡', text: 'GSM', cls: 'conn-gsm' };
+  if (!hasAnyConnData()) return { icon: '📡', text: 'GSM', cls: 'conn-gsm' };
+  return null;
+}
+function setConnBadge(elId, feed) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const info = connInfo(feed);
+  if (info) {
+    el.textContent = info.icon + ' ' + info.text;
+    el.className = el.className.replace(/\bconn-wifi\b|\bconn-gsm\b/g, '').trim() + ' ' + info.cls;
+    el.style.display = 'inline-flex';
+    el.onclick = () => showConnInfoToast(info.text);
+  } else {
+    el.textContent = '';
+    el.style.display = 'none';
+    el.onclick = null;
+  }
+}
+
+// ── CONN INFO TOAST (σχόλιο κατά το πάτημα σε badge WiFi/GSM) ──
+let _connToastTimer = null;
+function showConnInfoToast(connType) {
+  const isGsm = connType === 'GSM';
+  const toast = document.getElementById('conn-info-toast');
+  const icon  = document.getElementById('conn-info-toast-icon');
+  const msg   = document.getElementById('conn-info-toast-msg');
+  if (_connToastTimer) clearTimeout(_connToastTimer);
+  toast.className = isGsm ? 'conn-toast-gsm' : '';
+  icon.textContent = isGsm ? '📡' : '📶';
+  msg.textContent = isGsm
+    ? 'Η αποστολή δεδομένων έγινε με σύνδεση GSM/MOBILE'
+    : 'Η αποστολή δεδομένων έγινε με σύνδεση WIFI';
+  toast.offsetHeight; // reflow ώστε να ξαναπαίξει το transition
+  toast.classList.add('show');
+  _connToastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2800);
+}
+
+// ── STATE ──
+let CHANNELS = [], CHANNEL = '', activeChannelIndex = 0;
+// ── ΣΥΓΚΡΙΣΗ ΖΥΓΑΡΙΩΝ (tab Γραφήματα) ──
+let compareMode = false;
+let compareSelectedChannels = new Set();
+let compareFeedsCache = {}; // idx -> feeds array (φορτωμένα από ThingSpeak για σύγκριση)
+const COMPARE_COLORS = ['#f0a500', '#1a6dcc', '#e05050', '#4a9e4a', '#9b59b6', '#e67e22'];
+function compareColorFor(k) { return COMPARE_COLORS[k % COMPARE_COLORS.length]; }
+let currentUser = '', userRow = null; // full row from sheet
+let myChart = null, graphCharts = {};
+let allFeeds = [], graphFeeds = [];
+window.allFeeds = allFeeds; // expose for Firebase module
+let tareWeight = null, tareDate = null;
+let alertShownForSession = false, alertBatShown = false;
+let confirmCallback = null;
+let rangeMode = 'count'; // 'count' | 'date'
+
+// ── HAPTIC FEEDBACK ──
+function hapticFeedback(pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern || 15); } catch(e) {}
+}
+
+// ── COUNT-UP ANIMATION + FLASH/GLOW ΓΙΑ ΤΟ ΒΑΡΟΣ ──
+let _lastRenderedWeight = null;
+let _weightAnimFrame = null;
+function animateWeightUpdate(newWeight) {
+  const el = document.getElementById('weight-main');
+  if (!el || isNaN(newWeight)) return;
+  const startVal = (_lastRenderedWeight === null) ? newWeight : _lastRenderedWeight;
+  const isNewMeasurement = _lastRenderedWeight !== null && Math.abs(newWeight - _lastRenderedWeight) > 0.0001;
+  if (_weightAnimFrame) cancelAnimationFrame(_weightAnimFrame);
+  const duration = 700;
+  const startTime = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    const current = startVal + (newWeight - startVal) * eased;
+    el.textContent = current.toFixed(3) + ' kg';
+    if (t < 1) {
+      _weightAnimFrame = requestAnimationFrame(step);
+    } else {
+      el.textContent = newWeight.toFixed(3) + ' kg';
+      _lastRenderedWeight = newWeight;
+      fitOneLine(el, 34, 20, 1);
+    }
+  }
+  _weightAnimFrame = requestAnimationFrame(step);
+  if (isNewMeasurement) {
+    el.classList.remove('weight-pulse');
+    void el.offsetWidth; // reflow για επανεκκίνηση animation
+    el.classList.add('weight-pulse');
+    setTimeout(() => el.classList.remove('weight-pulse'), 950);
+  }
+}
+
+// ── RIPPLE EFFECT (Material-style) σε βασικά κουμπιά της εφαρμογής ──
+const RIPPLE_SELECTOR = '.btn-login, .btn-channel, .btn-back-ch, .nav-btn, .ch-pill-btn, .btn-tare, .btn-logout, .theme-toggle-top, .btn-notif, .btn-clear, .compare-ch-btn, .range-mode-btn, .btn-confirm-yes, .btn-confirm-no, .refresh-top, .btn-notes-clear';
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest(RIPPLE_SELECTOR);
+  if (!btn || btn.disabled) return;
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const hasCoords = e.clientX || e.clientY;
+  const x = hasCoords ? (e.clientX - rect.left) : rect.width / 2;
+  const y = hasCoords ? (e.clientY - rect.top) : rect.height / 2;
+  const span = document.createElement('span');
+  span.className = 'ripple-span';
+  span.style.width = span.style.height = size + 'px';
+  span.style.left = (x - size / 2) + 'px';
+  span.style.top = (y - size / 2) + 'px';
+  btn.appendChild(span);
+  span.addEventListener('animationend', () => span.remove());
+}, true);
+
+// ── ALERT ──
+function showAlert(title, msg, detail) {
+  document.getElementById('alert-title-text').textContent = title;
+  document.getElementById('alert-msg-text').textContent = msg;
+  document.getElementById('alert-detail').textContent = detail || '';
+  document.getElementById('alert-overlay').classList.add('visible');
+}
+function dismissAlert() {
+  document.getElementById('alert-overlay').classList.remove('visible');
+  // Αν το alert που μόλις κλείσαμε ήταν login-warning, χειρίσου την επανάληψη/ουρά
+  if (activeLoginWarning) handleLoginWarningDismiss();
+}
+
+// ── LOGIN WARNING QUEUE (κελί I) ──
+// Κάθε μήνυμα (ανά ζυγαριά, αν υπάρχουν πολλές) εμφανίζεται, και μόλις ο χρήστης πατήσει
+// "Κατάλαβα" ξαναεμφανίζεται μετά από 10 δευτ., για ακόμα 5 φορές (σύνολο 6 εμφανίσεις),
+// πριν προχωρήσει στο επόμενο μήνυμα της ουράς (αν υπάρχει).
+const LOGIN_WARNING_REPEAT_DELAY_MS = 10000;
+const LOGIN_WARNING_EXTRA_REPEATS   = 5;
+let loginWarningQueue = [];
+let activeLoginWarning = null; // { title, msg, repeatsLeft }
+let loginWarningTimer = null;
+
+function clearLoginWarnings() {
+  loginWarningQueue = [];
+  activeLoginWarning = null;
+  if (loginWarningTimer) { clearTimeout(loginWarningTimer); loginWarningTimer = null; }
+}
+function queueLoginWarnings(rawWarning, channels, extraItems) {
+  const items = [];
+  if (Array.isArray(extraItems) && extraItems.length) items.push(...extraItems);
+  const raw = (rawWarning || '').trim();
+  if (raw) {
+    const parts = raw.split(';').map(s => s.trim());
+    if (channels.length >= 2 && parts.length === channels.length) {
+      // Διαφορετικό μήνυμα ανά ζυγαριά/κανάλι, στη ίδια σειρά με τη στήλη C
+      parts.forEach((w, idx) => {
+        if (w) items.push({ title: 'ΕΙΔΟΠΟΙΗΣΗ – Ζυγαριά Νο ' + (idx + 1), msg: w });
+      });
+    } else if (parts.some(p => p)) {
+      // Ένα γενικό μήνυμα (χωρίς ';' ή με αριθμό μηνυμάτων που δεν ταιριάζει με τα κανάλια)
+      items.push({ title: 'ΕΙΔΟΠΟΙΗΣΗ', msg: raw });
+    }
+  }
+  if (!items.length) return;
+  loginWarningQueue = items;
+  processNextLoginWarning();
+}
+function processNextLoginWarning() {
+  if (!loginWarningQueue.length) { activeLoginWarning = null; return; }
+  const next = loginWarningQueue.shift();
+  // Κάθε στοιχείο της ουράς μπορεί να ορίσει δικό του αριθμό επαναλήψεων (π.χ. 0 = μία φορά μόνο).
+  // Αν δεν οριστεί, ισχύει η προεπιλεγμένη συμπεριφορά (6 εμφανίσεις συνολικά).
+  const repeats = (typeof next.repeats === 'number') ? next.repeats : LOGIN_WARNING_EXTRA_REPEATS;
+  showLoginWarning(next.title, next.msg, repeats);
+}
+function showLoginWarning(title, msg, repeatsLeft) {
+  activeLoginWarning = { title, msg, repeatsLeft };
+  showAlert(title, msg);
+}
+function handleLoginWarningDismiss() {
+  const w = activeLoginWarning;
+  activeLoginWarning = null;
+  if (w.repeatsLeft > 0) {
+    loginWarningTimer = setTimeout(() => {
+      loginWarningTimer = null;
+      showLoginWarning(w.title, w.msg, w.repeatsLeft - 1);
+    }, LOGIN_WARNING_REPEAT_DELAY_MS);
+  } else {
+    processNextLoginWarning(); // πέρασε στο επόμενο μήνυμα της ουράς, αν υπάρχει
+  }
+}
+
+// ── CONFIRM ──
+function showConfirm(msg, cb) {
+  document.getElementById('confirm-msg').textContent = msg;
+  confirmCallback = cb;
+  document.getElementById('confirm-overlay').classList.add('visible');
+}
+function confirmAction(yes) {
+  document.getElementById('confirm-overlay').classList.remove('visible');
+  if (confirmCallback) { confirmCallback(yes); confirmCallback = null; }
+}
+
+// ── PARSE CHANNELS ──
+function parseChannels(str) { return str.split(';').map(s => s.trim()).filter(Boolean); }
+
+// NOTE: fetchCSV returns the full object from Apps Script JSONP.
+// The Apps Script must return: { username: { password, channel, expiredDate, simSN, tare, warning } }
+// Apps Script should read: A=username, B=password, C=channel, D=expiredDate, E=simSN, G=tare, I=warning
+// Τα C, D, E, G, I μπορούν να περιέχουν 1+ τιμές χωρισμένες με ';' — μία ανά ζυγαριά/κανάλι, στην ίδια σειρά.
+// Υποστηρίζονται όσα κανάλια χρειάζεται (2, 3, 4, ...), όχι μόνο 2.
+
+// ── LOGIN ──
+async function doLogin() {
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value;
+  const errEl = document.getElementById('login-error');
+  const loadEl = document.getElementById('login-loading');
+  const btnEl = document.getElementById('btn-login');
+  errEl.textContent = ''; loadEl.textContent = 'Σύνδεση...'; btnEl.disabled = true;
+  try {
+    const users = await fetchCSV();
+    const user = users[u];
+    if (user && user.password === p) {
+      if (document.getElementById('chk-remember').checked) {
+        localStorage.setItem('rememberMe_user', u); localStorage.setItem('rememberMe_pass', p);
+      } else {
+        localStorage.removeItem('rememberMe_user'); localStorage.removeItem('rememberMe_pass');
+      }
+      currentUser = u;
+      userRow = user; // keeps cols: password, channel, expiredDate, simSN (cols D,E from sheet)
+      CHANNELS = parseChannels(user.channel);
+      window.currentUser = currentUser; window.CHANNELS = CHANNELS; // ορατό στο module script των ειδοποιήσεων
+      if (CHANNELS.length >= 2) {
+        CHANNEL = CHANNELS[0]; activeChannelIndex = 0; enterApp();
+      } else {
+        CHANNEL = CHANNELS[0]; activeChannelIndex = 0; enterApp();
+      }
+      // ── Προειδοποιητικό(ά) μήνυμα(τα) από το κελί I (στήλη "warning") του χρήστη ──
+      clearLoginWarnings();
+      queueLoginWarnings(user.warning, CHANNELS, []);
+    } else {
+      errEl.textContent = 'Λάθος username ή password';
+      document.getElementById('inp-pass').value = '';
+    }
+  } catch(e) { errEl.textContent = 'Σφάλμα: ' + e.message; }
+  finally { loadEl.textContent = ''; btnEl.disabled = false; }
+}
+
+function selectChannel(idx) {
+  activeChannelIndex = idx; CHANNEL = CHANNELS[idx];
+  document.getElementById('channel-screen').classList.remove('visible');
+  enterApp();
+}
+function goBackToLogin() {
+  document.getElementById('channel-screen').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  CHANNELS = []; currentUser = '';
+}
+
+function enterApp() {
+  const display = USER_DISPLAY[currentUser] || { name: currentUser, badge: '—' };
+  document.getElementById('hdr-name').textContent = display.name;
+  document.getElementById('hdr-badge').textContent = CHANNELS.length >= 2 ? 'No ' + (activeChannelIndex + 1) : display.badge;
+  if (CHANNELS.length >= 2) { document.getElementById('channel-switch-bar').classList.add('visible'); renderPills(); updatePills(); }
+  else { document.getElementById('channel-switch-bar').classList.remove('visible'); }
+  // ── Reset σύγκρισης ζυγαριών για τον νέο χρήστη/κανάλι ──
+  compareMode = false; compareFeedsCache = {};
+  const gtCompareEl = document.getElementById('gt-compare');
+  if (gtCompareEl) gtCompareEl.checked = false;
+  const compareRowEl = document.getElementById('graphs-compare-row');
+  const compareChRowEl = document.getElementById('compare-channels-row');
+  if (compareRowEl) compareRowEl.style.display = CHANNELS.length >= 2 ? 'block' : 'none';
+  if (compareChRowEl) compareChRowEl.style.display = 'none';
+  if (CHANNELS.length >= 2) renderCompareChannelsUI();
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('bottom-nav').style.display = 'flex';
+  restoreTare();
+  restoreNotes();
+  loadData();
+  populateInfoTab();
+  if (window.refreshNotifButtonState) window.refreshNotifButtonState();
+}
+
+function switchChannel(idx) {
+  if (idx === activeChannelIndex) return;
+  activeChannelIndex = idx; CHANNEL = CHANNELS[idx];
+  alertShownForSession = false; alertBatShown = false;
+  _lastRenderedWeight = null; // νέο κανάλι -> να μην κάνει count-up/pulse από την τιμή του προηγούμενου καναλιού
+  document.getElementById('hdr-badge').textContent = 'No ' + (idx + 1);
+  updatePills(); restoreTare(); restoreNotes(); loadData(); populateInfoTab();
+  window.scrollTo(0, 0);
+}
+// Φτιάχνει δυναμικά ένα pill-κουμπί ανά κανάλι (2, 3, 4... όσα έχει ο χρήστης)
+function renderPills() {
+  const container = document.getElementById('ch-pill-container');
+  container.innerHTML = '<div class="ch-pill-indicator" id="ch-pill-indicator"></div>' + CHANNELS.map((ch, i) =>
+    `<button class="ch-pill-btn" id="pill-${i}" onclick="switchChannel(${i})">No ${i + 1}</button>`
+  ).join('');
+  requestAnimationFrame(updatePills);
+}
+function updatePills() {
+  CHANNELS.forEach((ch, i) => {
+    const el = document.getElementById('pill-' + i);
+    if (el) el.classList.toggle('active', activeChannelIndex === i);
+  });
+  const indicator = document.getElementById('ch-pill-indicator');
+  const activeEl = document.getElementById('pill-' + activeChannelIndex);
+  if (indicator && activeEl) {
+    indicator.style.width = activeEl.offsetWidth + 'px';
+    indicator.style.transform = 'translateX(' + activeEl.offsetLeft + 'px)';
+  }
+}
+window.addEventListener('resize', () => { if (typeof updatePills === 'function' && window.CHANNELS && window.CHANNELS.length) updatePills(); });
+
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  ['scale','graphs','info'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('nav-' + t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'graphs' && allFeeds.length) renderGraphs();
+  window.scrollTo(0, 0);
+}
+
+// ── LOGOUT ──
+function doLogout() {
+  CHANNEL = ''; currentUser = ''; CHANNELS = []; allFeeds = []; graphFeeds = []; activeChannelIndex = 0;
+  userRow = null; tareWeight = null; tareDate = null;
+  alertShownForSession = false; alertBatShown = false; window._simAlertShown = false;
+  _lastRenderedWeight = null;
+  clearLoginWarnings();
+  window.currentUser = ''; window.CHANNELS = [];
+  if (window.refreshNotifButtonState) window.refreshNotifButtonState(); // ξεκαθαρίζει τα κουμπιά ειδοποιήσεων για τον επόμενο χρήστη
+  if (myChart) { myChart.destroy(); myChart = null; }
+  destroyGraphCharts();
+  document.getElementById('graphs-container').innerHTML = '';
+  compareMode = false; compareSelectedChannels = new Set(); compareFeedsCache = {};
+  const compareRowEl2 = document.getElementById('graphs-compare-row');
+  if (compareRowEl2) compareRowEl2.style.display = 'none';
+  ['tare-diff','weight-main','diff-day','diff-sametime','diff-prev','last-time','temp','hum','bat','sig'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = id === 'last-time' ? 'Τελευταία μέτρηση: —' : '—';
+  });
+  ['conn-badge-last','conn-badge-prev-weight','conn-badge-prevprev-weight','conn-badge-p3-weight'].forEach(id => setConnBadge(id, null));
+  document.getElementById('tare-ref').textContent = 'Πατήστε TARE για να αποθηκεύσετε το τρέχον βάρος';
+  document.getElementById('btn-tare').disabled = false;
+  document.getElementById('channel-switch-bar').classList.remove('visible');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('bottom-nav').style.display = 'none';
+  document.getElementById('channel-screen').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  const rem = localStorage.getItem('rememberMe_user');
+  document.getElementById('inp-user').value = rem || '';
+  document.getElementById('inp-pass').value = rem ? (localStorage.getItem('rememberMe_pass') || '') : '';
+  document.getElementById('chk-remember').checked = !!rem;
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('toggle-last').checked = false;
+  document.getElementById('toggle-label').textContent = 'OFF';
+  document.getElementById('prev-panel').classList.remove('visible');
+  switchTab('scale');
+}
+
+document.getElementById('inp-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('inp-pass').focus(); });
+document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+(function initRememberMe() {
+  const u = localStorage.getItem('rememberMe_user'), p = localStorage.getItem('rememberMe_pass');
+  if (u && p) { document.getElementById('inp-user').value = u; document.getElementById('inp-pass').value = p; document.getElementById('chk-remember').checked = true; }
+})();
+
+// ── HELPERS ──
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear()
+    + ' - ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function fmtDateShort(iso) {
+  const d = new Date(iso);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0')
+    + '\n' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function fmtTimeOnly(iso) {
+  const d = new Date(iso);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0')
+    + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+// Μορφοποιεί τα γραμμάρια με τελεία χιλιάδων (π.χ. -30540 -> -30.540 gr)
+function fmtSignedGrams(grams) {
+  const sign = grams >= 0 ? '+' : '-';
+  return sign + Math.abs(grams).toLocaleString('el-GR') + ' gr';
+}
+function diffStr(val, ref) {
+  if (ref === null || isNaN(val) || isNaN(ref)) return { text: '—', cls: '' };
+  const grams = Math.round((val - ref) * 1000);
+  return { text: fmtSignedGrams(grams), cls: grams >= 0 ? 'diff-pos' : 'diff-neg' };
+}
+
+// ── Αυτόματη σμίκρυνση γραμματοσειράς ώστε η τιμή (π.χ. βάρος, διαφορά βάρους) να χωράει σε 1 γραμμή ──
+// Ελέγχει αν το στοιχείο "έσπασε" σε 2+ γραμμές (scrollHeight πολύ μεγαλύτερο από ύψος 1 γραμμής)
+// και μειώνει σταδιακά το font-size μέχρι να χωρέσει, ή μέχρι το ελάχιστο επιτρεπτό μέγεθος.
+function fitOneLine(el, maxPx, minPx, step) {
+  if (!el) return;
+  step = step || 1;
+  let size = maxPx;
+  el.style.fontSize = size + 'px';
+  const isWrapped = () => {
+    const cs = getComputedStyle(el);
+    let lh = parseFloat(cs.lineHeight);
+    if (isNaN(lh)) lh = parseFloat(cs.fontSize) * 1.2;
+    return el.scrollHeight > lh * 1.4;
+  };
+  while (size > minPx && isWrapped()) {
+    size -= step;
+    el.style.fontSize = size + 'px';
+  }
+}
+
+function notesKey() { return `notes_${currentUser}_ch${activeChannelIndex}`; }
+
+// ── TARE ανά κανάλι (υποστηρίζει όσα κανάλια έχει ο χρήστης: 2, 3, 4...) ──
+// Στο sheet, όλα τα TARE μιας γραμμής είναι σε ΕΝΑ κελί (G), χωρισμένα με ';',
+// στη ίδια θέση/σειρά με τα κανάλια της στήλης C.
+function getChannelTare(idx) {
+  if (!userRow || !userRow.tare) return '';
+  return userRow.tare.split(';')[idx] || '';
+}
+function setChannelTare(idx, value) {
+  if (!userRow) return;
+  const parts = (userRow.tare || '').split(';');
+  while (parts.length <= idx) parts.push('');
+  parts[idx] = value;
+  userRow.tare = parts.join(';');
+}
+
+function doRefresh() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  setTimeout(() => btn.classList.remove('spinning'), 600);
+  compareFeedsCache = {};
+  loadData();
+}
+
+// ── DEDUPLICATION: κρατά μόνο 1 μέτρηση ανά χρονικό παράθυρο 5 λεπτών ──
+// Οι ώρες αποστολής: 03:00-03:05, 09:00-09:05, 10:00-10:05, 11:00-11:05,
+//                    12:00-12:05, 15:00-15:05, 18:00-18:05, 21:00-21:05
+const SCHEDULE_HOURS = [3, 9, 10, 11, 12, 15, 18, 21];
+function deduplicateFeeds(feeds) {
+  const seen = new Set();
+  return feeds.filter(f => {
+    const d = new Date(f.created_at);
+    const h = d.getHours();
+    const m = d.getMinutes();
+    // Έλεγξε αν η μέτρηση ανήκει σε κάποιο από τα προγραμματισμένα παράθυρα (hh:00 - hh:04)
+    if (SCHEDULE_HOURS.includes(h) && m >= 0 && m <= 4) {
+      // Κλειδί: χρήστης + κανάλι + ημέρα + ώρα (αγνοούμε τα λεπτά/δευτερόλεπτα)
+      const dayStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
+      const key = `${dayStr}_${h}`;
+      if (seen.has(key)) return false; // διπλή — απόρριψη
+      seen.add(key);
+    }
+    return true;
+  });
+}
+
+// ── SKELETON LOADERS (showLoading / hideLoading) ──
+// Εμφανίζονται ΜΟΝΟ στην πρώτη φόρτωση (όσο δεν υπάρχουν ακόμη δεδομένα).
+// Σε επόμενα refresh (setInterval / doRefresh) τα δεδομένα παραμένουν ορατά
+// και ενημερώνονται στη θέση τους, χωρίς να "τρεμοπαίζει" η οθόνη.
+window.showLoading = function() {
+  const hasData = window.allFeeds && window.allFeeds.length;
+  if (hasData) return;
+  const skelScale = document.getElementById('skel-scale');
+  const liveScale = document.getElementById('scale-live-content');
+  if (skelScale) skelScale.classList.add('active');
+  if (liveScale) liveScale.style.display = 'none';
+  const errEl = document.getElementById('error');
+  if (errEl) errEl.style.display = 'none';
+};
+window.hideLoading = function() {
+  const skelScale = document.getElementById('skel-scale');
+  const liveScale = document.getElementById('scale-live-content');
+  if (skelScale) skelScale.classList.remove('active');
+  if (liveScale) liveScale.style.display = '';
+  const skelGraphs = document.getElementById('skel-graphs');
+  if (skelGraphs) skelGraphs.classList.remove('active');
+};
+
+// ── LOAD DATA (50 για ζυγαριά, 500 για γραφήματα) ──
+async function loadData() {
+  showLoading();
+  document.getElementById('error').style.display = 'none';
+  document.getElementById('chart').style.display = 'none';
+  try {
+    // Φόρτωσε 500 για γραφήματα
+    const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL}/feeds.json?results=500`);
+    const data = await res.json();
+    const rawFeeds = data.feeds.filter(f => f.field1 && f.field1 !== '' && !isNaN(parseFloat(f.field1)));
+    allFeeds = deduplicateFeeds(rawFeeds);
+    window.allFeeds = allFeeds; // sync global for Firebase module
+    graphFeeds = allFeeds;
+    if (!allFeeds.length) throw new Error('Δεν βρέθηκαν δεδομένα');
+    updateUI();
+    hideLoading();
+    if (document.getElementById('tab-graphs').classList.contains('active')) renderGraphs();
+  } catch(e) {
+    hideLoading();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').textContent = 'Σφάλμα: ' + e.message;
+  }
+}
+
+// ── UPDATE UI ──
+function updateUI() {
+  const feeds20 = allFeeds.slice(-20);
+  const latest = allFeeds[allFeeds.length - 1];
+  const prev   = allFeeds.length >= 2 ? allFeeds[allFeeds.length - 2] : null;
+  const weightNow = parseFloat(latest.field1);
+
+  animateWeightUpdate(weightNow);
+  document.getElementById('last-time').textContent = 'Τελευταία μέτρηση: ' + fmtDate(latest.created_at);
+  setConnBadge('conn-badge-last', latest);
+
+  if (prev) {
+    document.getElementById('prev-weight').textContent = parseFloat(prev.field1).toFixed(3) + ' kg';
+    document.getElementById('prev-weight-time').textContent = fmtTimeOnly(prev.created_at);
+    setConnBadge('conn-badge-prev-weight', prev);
+    // Διαφορά βάρους prev vs prev-prev
+    const prevPrev = allFeeds.length >= 3 ? allFeeds[allFeeds.length - 3] : null;
+    const diffWrap = document.getElementById('prev-weight-diff-wrap');
+    const diffEl   = document.getElementById('prev-weight-diff');
+    const diffTimeEl = document.getElementById('prev-weight-diff-time');
+    if (prevPrev) {
+      const grams = Math.round((parseFloat(prev.field1) - parseFloat(prevPrev.field1)) * 1000);
+      diffEl.textContent = fmtSignedGrams(grams);
+      diffEl.style.color = grams >= 0 ? '#1a7a1a' : '#cc1a1a';
+      diffEl.style.display = 'inline';
+      diffTimeEl.textContent = fmtTimeOnly(prevPrev.created_at);
+      setConnBadge('conn-badge-prevprev-weight', prevPrev);
+      document.getElementById('prev-prevprev-weight').textContent = parseFloat(prevPrev.field1).toFixed(3) + ' kg';
+      diffWrap.style.display = 'block';
+      // Τρίτο προηγούμενο βάρος (allFeeds[-4])
+      const p3 = allFeeds.length >= 4 ? allFeeds[allFeeds.length - 4] : null;
+      const p3Wrap = document.getElementById('prev-weight-p3-wrap');
+      if (p3) {
+        document.getElementById('prev-p3-weight').textContent = parseFloat(p3.field1).toFixed(3) + ' kg';
+        document.getElementById('prev-p3-weight-time').textContent = fmtTimeOnly(p3.created_at);
+        setConnBadge('conn-badge-p3-weight', p3);
+        p3Wrap.style.display = 'block';
+      } else {
+        p3Wrap.style.display = 'none';
+      }
+    } else {
+      diffEl.style.display = 'none';
+      diffWrap.style.display = 'none';
+      setConnBadge('conn-badge-prevprev-weight', null);
+      setConnBadge('conn-badge-p3-weight', null);
+      document.getElementById('prev-weight-p3-wrap').style.display = 'none';
+    }
+  } else {
+    document.getElementById('prev-weight').textContent = '—';
+    document.getElementById('prev-weight-time').textContent = '';
+    setConnBadge('conn-badge-prev-weight', null);
+    document.getElementById('prev-weight-diff-wrap').style.display = 'none';
+  }
+
+  const dp = diffStr(weightNow, prev ? parseFloat(prev.field1) : null);
+  const elPrev = document.getElementById('diff-prev');
+  elPrev.textContent = dp.text; elPrev.className = dp.cls;
+  fitOneLine(elPrev, 26, 15, 1);
+  // Σημείωση: το μέγεθος γραμματοσειράς του weight-main ρυθμίζεται πλέον
+  // εσωτερικά από την animateWeightUpdate() όταν ολοκληρωθεί το count-up.
+
+  const yesterday21 = new Date(latest.created_at);
+  yesterday21.setDate(yesterday21.getDate() - 1); yesterday21.setHours(21,0,0,0);
+  let dayFeed = null, bestD = Infinity;
+  for (const f of allFeeds) {
+    const d = Math.abs(new Date(f.created_at).getTime() - yesterday21.getTime());
+    if (d < bestD) { bestD = d; dayFeed = f; }
+  }
+  const dd = diffStr(weightNow, dayFeed ? parseFloat(dayFeed.field1) : null);
+  const elDay = document.getElementById('diff-day');
+  elDay.textContent = dd.text; elDay.className = dd.cls;
+  fitOneLine(elDay, 22, 14, 1);
+
+  // Διαφορά σε σχέση με την ίδια ώρα χθες (π.χ. σήμερα 12:00 vs χθες 12:00)
+  const sameTimeYesterday = new Date(latest.created_at);
+  sameTimeYesterday.setDate(sameTimeYesterday.getDate() - 1);
+  let sameTimeFeed = null, bestDSame = Infinity;
+  for (const f of allFeeds) {
+    const d = Math.abs(new Date(f.created_at).getTime() - sameTimeYesterday.getTime());
+    if (d < bestDSame) { bestDSame = d; sameTimeFeed = f; }
+  }
+  // Δέχεται τιμή μόνο αν βρέθηκε μέτρηση εντός 2 ωρών από την ίδια ώρα χθες
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+  const ds = (sameTimeFeed && bestDSame <= TWO_HOURS_MS)
+    ? diffStr(weightNow, parseFloat(sameTimeFeed.field1))
+    : { text: '—', cls: '' };
+  const elSameTime = document.getElementById('diff-sametime');
+  if (elSameTime) {
+    elSameTime.textContent = ds.text;
+    elSameTime.className = ds.cls;
+    fitOneLine(elSameTime, 14, 11, 1);
+  }
+  // Όταν η τρέχουσα (τελευταία) μέτρηση είναι η βραδινή των 21:00, η "Διαφορά χθεσινής ίδιας ώρας"
+  // ταυτίζεται ουσιαστικά με τη "Διαφορά Ημέρας" (χθεσινή βραδινή μέτρηση) — άρα κρύβουμε τη γραμμή.
+  // Σημείωση: η συσκευή μπορεί να στείλει τη βραδινή μέτρηση λίγο νωρίτερα (π.χ. 20:59),
+  // γι' αυτό δεχόμαστε παράθυρο από 20:50 έως 21:xx ως "βραδινή μέτρηση".
+  const elSameTimeRow = document.getElementById('diff-sametime-row');
+  if (elSameTimeRow) {
+    const latestDate = new Date(latest.created_at);
+    const lh = latestDate.getHours();
+    const lm = latestDate.getMinutes();
+    const isEveningReading = (lh === 21) || (lh === 20 && lm >= 50);
+    elSameTimeRow.style.display = isEveningReading ? 'none' : '';
+  }
+
+  const THRESHOLD = -2500;
+  const dayGrams  = dayFeed ? Math.round((weightNow - parseFloat(dayFeed.field1)) * 1000) : null;
+  const prevGrams = prev    ? Math.round((weightNow - parseFloat(prev.field1))    * 1000) : null;
+  const dayAlert  = dayGrams  !== null && dayGrams  < THRESHOLD;
+  const prevAlert = prevGrams !== null && prevGrams < THRESHOLD;
+  elDay.classList.toggle('blink-alert', dayAlert);
+  elPrev.classList.toggle('blink-alert', prevAlert);
+  if ((dayAlert || prevAlert) && !alertShownForSession) {
+    alertShownForSession = true;
+    const details = [];
+    if (dayAlert)  details.push('Διαφορά Ημέρας: ' + dd.text);
+    if (prevAlert) details.push('Διαφορά Προηγ. Μέτρησης: ' + dp.text);
+    hapticFeedback([80,50,80,50,80]);
+    showAlert('ΕΙΔΟΠΟΙΗΣΗ ΖΥΓΑΡΙΑΣ', 'ΠΡΟΣΟΧΗ!\nΥπάρχει μεγάλη πτώση βάρους στη ζυγαριά!', details.join('  |  '));
+  }
+  if (!dayAlert && !prevAlert) alertShownForSession = false;
+
+  function lastFor(field) {
+    for (let i = allFeeds.length - 2; i >= 0; i--)
+      if (allFeeds[i][field] && allFeeds[i][field] !== '') return allFeeds[i];
+    return null;
+  }
+  function setArrow(id, current, previous) {
+    const el = document.getElementById(id);
+    if (previous === null || current === null || isNaN(current) || isNaN(previous)) { el.textContent = ''; return; }
+    const diff = current - previous;
+    if (Math.abs(diff) < 0.0005) { el.textContent = '–'; el.className = 'trend-arrow trend-eq'; }
+    else if (diff > 0)            { el.textContent = '▲'; el.className = 'trend-arrow trend-up'; }
+    else                          { el.textContent = '▼'; el.className = 'trend-arrow trend-down'; }
+  }
+
+  // arrow-weight αφαιρέθηκε - η διαφορά εμφανίζεται inline δίπλα στο βάρος
+
+  const FM = getFieldMap();
+
+  const tempNow = latest[FM.temp] ? parseFloat(latest[FM.temp]) : null;
+  const tempEl = document.getElementById('temp');
+  tempEl.textContent = tempNow !== null ? tempNow.toFixed(1) + ' °C' : '—';
+  tempEl.className = 'sensor-value';
+  if (tempNow !== null) {
+    if (tempNow > 38) tempEl.classList.add('blink-alert');
+    else if (tempNow < 7) tempEl.classList.add('temp-cold');
+  }
+  const pT = lastFor(FM.temp);
+  setArrow('arrow-temp', tempNow, pT ? parseFloat(pT[FM.temp]) : null);
+
+  const humNow = latest[FM.hum] ? parseFloat(latest[FM.hum]) : null;
+  const humEl = document.getElementById('hum');
+  humEl.textContent = humNow !== null ? humNow.toFixed(1) + ' %' : '—';
+  humEl.className = 'sensor-value';
+  if (humNow !== null && humNow > 85) {
+    humEl.classList.add('blink-blue');
+    showHumToast();
+  }
+  const pH = lastFor(FM.hum);
+  setArrow('arrow-hum', humNow, pH ? parseFloat(pH[FM.hum]) : null);
+
+  const batNow = latest[FM.bat] ? parseFloat(latest[FM.bat]) : null;
+  const batEl = document.getElementById('bat');
+  batEl.textContent = batNow !== null ? batNow.toFixed(2) + ' v' : '—';
+  batEl.classList.toggle('blink-alert', batNow !== null && batNow < 2.9);
+  if (batNow !== null && batNow < 2.9 && !alertBatShown) {
+    alertBatShown = true;
+    hapticFeedback([80,50,80,50,80]);
+    showAlert('🔋 Χαμηλή Μπαταρία', 'Προσοχή!\nΧαμηλή στάθμη μπαταρίας!', batNow.toFixed(2) + ' v');
+  }
+  if (batNow !== null && batNow >= 2.9) alertBatShown = false;
+  const pB = lastFor(FM.bat);
+  setArrow('arrow-bat', batNow, pB ? parseFloat(pB[FM.bat]) : null);
+
+  const sigNow = latest[FM.sig] ? parseFloat(latest[FM.sig]) : null;
+  document.getElementById('sig').textContent = sigNow !== null ? Math.round(sigNow) + ' %' : '—';
+  const pS = lastFor(FM.sig);
+  setArrow('arrow-sig', sigNow, pS ? parseFloat(pS[FM.sig]) : null);
+
+  document.getElementById('prev-temp').textContent = pT ? parseFloat(pT[FM.temp]).toFixed(1) + ' °C' : '—';
+  document.getElementById('prev-temp-time').textContent = pT ? fmtTimeOnly(pT.created_at) : '';
+  document.getElementById('prev-hum').textContent  = pH ? parseFloat(pH[FM.hum]).toFixed(1) + ' %'  : '—';
+  document.getElementById('prev-hum-time').textContent  = pH ? fmtTimeOnly(pH.created_at) : '';
+  document.getElementById('prev-bat').textContent  = pB ? parseFloat(pB[FM.bat]).toFixed(2) + ' v'  : '—';
+  document.getElementById('prev-bat-time').textContent  = pB ? fmtTimeOnly(pB.created_at) : '';
+  document.getElementById('prev-sig').textContent  = pS ? Math.round(parseFloat(pS[FM.sig])) + ' %' : '—';
+  document.getElementById('prev-sig-time').textContent  = pS ? fmtTimeOnly(pS.created_at) : '';
+
+  updateTareDiff(weightNow);
+  drawChart(feeds20);
+}
+
+// ── MAIN CHART ──
+function drawChart(feeds) {
+  const labels = feeds.map(f => fmtDateShort(f.created_at));
+  const values = feeds.map(f => parseFloat(f.field1));
+  if (myChart) myChart.destroy();
+  const ctx = document.getElementById('chart').getContext('2d');
+  myChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Βάρος (kg)', data: values, borderColor: '#f0a500', backgroundColor: 'rgba(240,165,0,0.10)', pointBackgroundColor: '#f0a500', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 9, borderWidth: 2, tension: 0.2, fill: true }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 900, easing: 'easeOutQuart' },
+      plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#ccc', bodyColor: '#fff', borderColor: '#f0a500', borderWidth: 1, padding: 10,
+        callbacks: { title: items => fmtDate(feeds[items[0].dataIndex].created_at), label: ctx => '  ' + ctx.parsed.y.toFixed(3) + ' kg' }
+      }},
+      scales: { x: { ticks: { font: { size: 9 }, color: chartAxisColor(), maxRotation: 0 }, grid: { color: chartGridColor() } }, y: { ticks: { font: { size: 10 }, color: chartAxisColor(), callback: v => v.toFixed(1) }, grid: { color: chartGridColor() } } }
+    }
+  });
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('chart').style.display = 'block';
+}
+
+// ── GRAPHS TAB ──
+function setRangeMode(mode) {
+  rangeMode = mode;
+  document.getElementById('rmode-count').classList.toggle('active', mode === 'count');
+  document.getElementById('rmode-date').classList.toggle('active', mode === 'date');
+  document.getElementById('range-count-row').style.display = mode === 'count' ? 'flex' : 'none';
+  document.getElementById('range-date-row').style.display  = mode === 'date'  ? 'flex' : 'none';
+}
+
+function getFilteredFeeds(sourceFeeds) {
+  const src = sourceFeeds || allFeeds;
+  if (rangeMode === 'count') {
+    const n = Math.max(5, Math.min(500, parseInt(document.getElementById('inp-count').value) || 20));
+    return src.slice(-n);
+  } else {
+    const from = document.getElementById('inp-date-from').value;
+    const to   = document.getElementById('inp-date-to').value;
+    if (!from && !to) return src.slice(-50);
+    const fromTs = from ? new Date(from).getTime() : 0;
+    const toTs   = to   ? new Date(to + 'T23:59:59').getTime() : Infinity;
+    return src.filter(f => { const t = new Date(f.created_at).getTime(); return t >= fromTs && t <= toTs; });
+  }
+}
+
+// ── ΣΥΓΚΡΙΣΗ ΖΥΓΑΡΙΩΝ: UI + φόρτωση δεδομένων άλλων καναλιών ──
+function renderCompareChannelsUI() {
+  const container = document.getElementById('compare-channels-row');
+  if (!container) return;
+  compareSelectedChannels = new Set([activeChannelIndex]);
+  container.innerHTML = CHANNELS.map((ch, i) =>
+    `<button type="button" class="compare-ch-btn${i === activeChannelIndex ? ' active' : ''}" id="cmp-ch-${i}" onclick="toggleCompareChannel(${i})">No ${i + 1}</button>`
+  ).join('');
+}
+function toggleCompareChannel(idx) {
+  if (compareSelectedChannels.has(idx)) {
+    if (compareSelectedChannels.size <= 1) return; // πρέπει να μείνει τουλάχιστον 1 επιλεγμένη ζυγαριά
+    compareSelectedChannels.delete(idx);
+  } else {
+    compareSelectedChannels.add(idx);
+  }
+  const btn = document.getElementById('cmp-ch-' + idx);
+  if (btn) btn.classList.toggle('active', compareSelectedChannels.has(idx));
+  renderGraphs();
+}
+function toggleCompareMode() {
+  compareMode = document.getElementById('gt-compare').checked;
+  const row = document.getElementById('compare-channels-row');
+  if (row) row.style.display = compareMode ? 'flex' : 'none';
+  renderGraphs();
+}
+// Φορτώνει (ή επιστρέφει από cache) τα feeds ενός καναλιού/ζυγαριάς με index idx.
+// Το ενεργό κανάλι έχει ήδη τα feeds του στο allFeeds (φορτωμένα από loadData).
+async function ensureChannelFeedsLoaded(idx) {
+  if (idx === activeChannelIndex) { compareFeedsCache[idx] = allFeeds; return allFeeds; }
+  if (compareFeedsCache[idx]) return compareFeedsCache[idx];
+  const chId = CHANNELS[idx];
+  const res = await fetch(`https://api.thingspeak.com/channels/${chId}/feeds.json?results=500`);
+  const data = await res.json();
+  const rawFeeds = data.feeds.filter(f => f.field1 && f.field1 !== '' && !isNaN(parseFloat(f.field1)));
+  const feeds = deduplicateFeeds(rawFeeds);
+  compareFeedsCache[idx] = feeds;
+  return feeds;
+}
+
+function applyGraphRange() { renderGraphs(); }
+
+function getGraphDefs() {
+  const FM = getFieldMap();
+  const defs = [
+    { id: 'weight', toggleId: 'gt-weight', field: 'field1', label: '⚖️ Βάρος (kg)', color: '#f0a500', unit: ' kg', toFixed: 3 },
+    { id: 'temp',   toggleId: 'gt-temp',   field: FM.temp,  label: '🌡️ Θερμοκρασία (°C)', color: '#e05050', unit: ' °C', toFixed: 1 },
+    { id: 'hum',    toggleId: 'gt-hum',    field: FM.hum,   label: '💧 Υγρασία (%)', color: '#1a6dcc', unit: ' %', toFixed: 1 },
+    { id: 'bat',    toggleId: 'gt-bat',    field: FM.bat,   label: '🔋 Μπαταρία (v)', color: '#4a9e4a', unit: ' v', toFixed: 2 },
+    { id: 'sig',    toggleId: 'gt-sig',    field: FM.sig,   label: '📶 Σήμα (%)', color: '#888', unit: ' %', toFixed: 0 },
+  ];
+  if (isConnField6Available()) {
+    defs.push({ id: 'conn', toggleId: 'gt-conn', field: 'field6', label: '📡 Τύπος Σύνδεσης', color: '#0a5fa0', categorical: true, catMap: { 11: 'WiFi', 22: 'GSM' } });
+  }
+  return defs;
+}
+
+function destroyGraphCharts() {
+  Object.values(graphCharts).forEach(c => { try { c.destroy(); } catch(e){} });
+  graphCharts = {};
+}
+
+async function renderGraphs() {
+  const container = document.getElementById('graphs-container');
+  const nodataEl = document.getElementById('graphs-nodata');
+  destroyGraphCharts();
+
+  const doingCompare = compareMode && CHANNELS.length >= 2 && compareSelectedChannels.size >= 2;
+
+  let channelSeries;
+  if (doingCompare) {
+    container.innerHTML = '';
+    nodataEl.style.display = 'block';
+    nodataEl.textContent = 'Φόρτωση δεδομένων σύγκρισης...';
+    const idxList = Array.from(compareSelectedChannels).sort((a, b) => a - b);
+    let feedsPerChannel;
+    try {
+      feedsPerChannel = await Promise.all(idxList.map(i => ensureChannelFeedsLoaded(i)));
+    } catch (e) {
+      nodataEl.style.display = 'block';
+      nodataEl.textContent = 'Σφάλμα φόρτωσης δεδομένων σύγκρισης: ' + e.message;
+      return;
+    }
+    channelSeries = idxList.map((i, k) => ({ idx: i, feeds: getFilteredFeeds(feedsPerChannel[k]) }));
+  } else {
+    channelSeries = [{ idx: activeChannelIndex, feeds: getFilteredFeeds() }];
+  }
+
+  container.innerHTML = '';
+  const primaryFeeds = channelSeries[0].feeds;
+
+  // Εμφάνιση του toggle "Σύνδεση" μόνο αν το field6 υπάρχει πραγματικά ως τύπος σύνδεσης σε αυτό το κανάλι/εύρος
+  const connItem = document.getElementById('gtoggle-conn-item');
+  const hasConnData = isConnField6Available() && primaryFeeds.some(f => f.field6 === '11' || f.field6 === '22');
+  if (connItem) connItem.style.display = hasConnData ? 'flex' : 'none';
+
+  const activeDefs = getGraphDefs().filter(d => document.getElementById(d.toggleId).checked && (d.id !== 'conn' || hasConnData));
+  const anyFeeds = channelSeries.some(cs => cs.feeds.length);
+  if (!activeDefs.length || !anyFeeds) {
+    nodataEl.style.display = 'block';
+    nodataEl.textContent = anyFeeds ? 'Επιλέξτε τουλάχιστον ένα γράφημα.' : 'Δεν υπάρχουν δεδομένα για το επιλεγμένο εύρος.';
+    return;
+  }
+  nodataEl.style.display = 'none';
+
+  if (channelSeries.length === 1) {
+    // ── ΜΙΑ ΖΥΓΑΡΙΑ: ίδια συμπεριφορά όπως πριν ──
+    const feeds = channelSeries[0].feeds;
+    const labels = feeds.map(f => fmtDateShort(f.created_at));
+
+    activeDefs.forEach(def => {
+      let vals, values;
+      if (def.categorical) {
+        // Χαρτογράφηση 11->1 (WiFi), 22->2 (GSM), οτιδήποτε άλλο -> null
+        vals = feeds.map(f => {
+          const raw = String(f[def.field] || '').trim();
+          if (raw === '11') return 1;
+          if (raw === '22') return 2;
+          return null;
+        });
+        values = vals.filter(v => v !== null);
+      } else {
+        values = feeds.map(f => f[def.field] ? parseFloat(f[def.field]) : null).filter(v => v !== null);
+        vals = feeds.map(f => f[def.field] ? parseFloat(f[def.field]) : null);
+      }
+      if (!values.length) return;
+
+      const block = document.createElement('div');
+      block.className = 'graph-block';
+      block.style.animationDelay = (container.children.length * 70) + 'ms';
+      block.innerHTML = `<div class="graph-block-title">${def.label}</div><div class="graph-block-wrap"><canvas id="gc-${def.id}"></canvas></div>`;
+      container.appendChild(block);
+
+      requestAnimationFrame(() => {
+        const ctx = document.getElementById('gc-' + def.id);
+        if (!ctx) return;
+        const yLabelFor = v => def.categorical ? (def.catMap[v === 1 ? 11 : v === 2 ? 22 : null] || '') : v.toFixed(def.toFixed);
+        graphCharts[def.id] = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [{ label: def.label, data: vals, borderColor: def.color, backgroundColor: def.color + '18', pointBackgroundColor: def.color, pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 10, pointHoverBackgroundColor: def.color, pointHoverBorderColor: '#fff', pointHoverBorderWidth: 3, borderWidth: 2, tension: def.categorical ? 0 : 0.2, stepped: def.categorical ? 'middle' : false, fill: def.categorical ? false : true, spanGaps: true }]},
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            animation: { duration: 800, easing: 'easeOutQuart' },
+            interaction: { mode: 'nearest', intersect: true },
+            plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#ccc', bodyColor: '#fff', borderColor: def.color, borderWidth: 1, padding: 10, titleFont: { size: 11 }, bodyFont: { size: 14, weight: 'bold' },
+              callbacks: { title: items => fmtDate(feeds[items[0].dataIndex].created_at), label: ctx => '  ' + (ctx.parsed.y !== null ? (def.categorical ? yLabelFor(ctx.parsed.y) : ctx.parsed.y.toFixed(def.toFixed) + def.unit) : '—') }
+            }},
+            scales: {
+              x: { ticks: { font: { size: 8 }, color: chartAxisColor(), maxRotation: 0 }, grid: { color: chartGridColor() } },
+              y: def.categorical
+                ? { min: 0.5, max: 2.5, ticks: { font: { size: 9 }, color: chartAxisColor(), stepSize: 1, callback: yLabelFor }, grid: { color: chartGridColor() } }
+                : { ticks: { font: { size: 9 }, color: chartAxisColor(), callback: v => v.toFixed(def.toFixed) }, grid: { color: chartGridColor() } }
+            }
+          }
+        });
+      });
+    });
+  } else {
+    // ── ΣΥΓΚΡΙΣΗ ΠΟΛΛΩΝ ΖΥΓΑΡΙΩΝ: κοινός γράφημα ανά μέγεθος, μία γραμμή/χρώμα ανά ζυγαριά ──
+    activeDefs.forEach(def => buildCompareChart(def, channelSeries, container));
+  }
+}
+
+// Χτίζει ένα γράφημα σύγκρισης (πολλές ζυγαριές) για ένα συγκεκριμένο μέγεθος (π.χ. Βάρος)
+function buildCompareChart(def, channelSeries, container) {
+  const block = document.createElement('div');
+  block.className = 'graph-block';
+  block.style.animationDelay = (container.children.length * 70) + 'ms';
+  block.innerHTML = `<div class="graph-block-title">${def.label} — Σύγκριση</div><div class="graph-block-wrap"><canvas id="gc-${def.id}"></canvas></div>`;
+  container.appendChild(block);
+
+  requestAnimationFrame(() => {
+    const ctx = document.getElementById('gc-' + def.id);
+    if (!ctx) return;
+    const yLabelFor = v => def.categorical ? (def.catMap[v === 1 ? 11 : v === 2 ? 22 : null] || '') : v.toFixed(def.toFixed);
+
+    const datasets = channelSeries.map((cs, k) => {
+      const color = compareColorFor(k);
+      const points = cs.feeds.map(f => {
+        let y;
+        if (def.categorical) {
+          const raw = String(f[def.field] || '').trim();
+          y = raw === '11' ? 1 : raw === '22' ? 2 : null;
+        } else {
+          y = f[def.field] ? parseFloat(f[def.field]) : null;
+        }
+        return y === null ? null : { x: new Date(f.created_at).getTime(), y };
+      }).filter(p => p !== null);
+      return {
+        label: 'No ' + (cs.idx + 1),
+        data: points,
+        borderColor: color, backgroundColor: color + '18',
+        pointBackgroundColor: color, pointBorderColor: '#fff', pointBorderWidth: 2,
+        pointRadius: 5, pointHoverRadius: 8, borderWidth: 2,
+        tension: def.categorical ? 0 : 0.2, stepped: def.categorical ? 'middle' : false,
+        fill: false, spanGaps: true
+      };
+    }).filter(ds => ds.data.length);
+
+    if (!datasets.length) { block.remove(); return; }
+
+    graphCharts[def.id] = new Chart(ctx, {
+      type: 'line',
+      data: { datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 800, easing: 'easeOutQuart' },
+        interaction: { mode: 'nearest', intersect: false },
+        plugins: {
+          legend: { display: true, position: 'top', labels: { color: chartAxisColor(), font: { size: 10 }, boxWidth: 12, usePointStyle: true } },
+          tooltip: { enabled: true, backgroundColor: '#222', titleColor: '#ccc', bodyColor: '#fff', borderWidth: 1, padding: 10, titleFont: { size: 11 }, bodyFont: { size: 13, weight: 'bold' },
+            callbacks: {
+              title: items => items.length ? fmtDate(new Date(items[0].parsed.x).toISOString()) : '',
+              label: ctx => '  ' + ctx.dataset.label + ': ' + (ctx.parsed.y !== null ? (def.categorical ? yLabelFor(ctx.parsed.y) : ctx.parsed.y.toFixed(def.toFixed) + (def.unit || '')) : '—')
+            }
+          }
+        },
+        scales: {
+          x: { type: 'linear', ticks: { font: { size: 8 }, color: chartAxisColor(), maxRotation: 0, callback: v => fmtDateShort(new Date(v).toISOString()) }, grid: { color: chartGridColor() } },
+          y: def.categorical
+            ? { min: 0.5, max: 2.5, ticks: { font: { size: 9 }, color: chartAxisColor(), stepSize: 1, callback: yLabelFor }, grid: { color: chartGridColor() } }
+            : { ticks: { font: { size: 9 }, color: chartAxisColor(), callback: v => v.toFixed(def.toFixed) }, grid: { color: chartGridColor() } }
+        }
+      }
+    });
+  });
+}
+
+// ── HUMIDITY TOAST (3 sec) ──
+let _humToastTimer = null;
+function showHumToast() {
+  const t = document.getElementById('hum-toast');
+  if (_humToastTimer) return; // ήδη εμφανίζεται
+  t.classList.add('show');
+  _humToastTimer = setTimeout(() => {
+    t.classList.remove('show');
+    _humToastTimer = null;
+  }, 3000);
+}
+
+// ── SIM TOAST (floating 4 sec on Ζυγαριά tab) ──
+let _toastTimer = null;
+function showSimToast(icon, msg, cls) {
+  const toast = document.getElementById('sim-toast');
+  const toastIcon = document.getElementById('sim-toast-icon');
+  const toastMsg  = document.getElementById('sim-toast-msg');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  toast.className = cls.split(' ')[0]; // toast-ok or toast-err
+  toastIcon.textContent = icon;
+  toastMsg.textContent  = msg;
+  toastMsg.className    = 'sim-toast-msg ' + (cls.includes('ok') ? 'ok' : 'err');
+  // force reflow so transition fires
+  toast.offsetHeight;
+  toast.classList.add('show');
+  _toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2000);
+}
+
+// ── INFO TAB ──
+async function populateInfoTab() {
+  document.getElementById('info-tsid').textContent = CHANNEL || '—';
+
+  // Fetch channel name from ThingSpeak
+  try {
+    const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL}.json`);
+    const data = await res.json();
+    document.getElementById('info-name').textContent = data.name || '—';
+  } catch(e) {
+    document.getElementById('info-name').textContent = '—';
+  }
+
+  // Split D and E by ';' to support per-channel values
+  const rawExpired = userRow && userRow.expiredDate ? userRow.expiredDate : '';
+  const rawSim     = userRow && userRow.simSN       ? userRow.simSN       : '';
+  const expiredRaw = rawExpired.split(';')[activeChannelIndex] || rawExpired.split(';')[0] || '';
+  const simSN      = rawSim.split(';')[activeChannelIndex]     || rawSim.split(';')[0]     || '—';
+
+  document.getElementById('info-sim').textContent = simSN;
+
+  // ── Helpers ──
+  function parseExpDate(str) {
+    if (!str) return null;
+    // DD-MM-YYYY
+    if (/^\d{2}-\d{2}-\d{4}$/.test(str)) {
+      const [d,m,y] = str.split('-');
+      return new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+    }
+    // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      const [y,m,d] = str.split('-');
+      return new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+    }
+    return null;
+  }
+  function fmtExpDate(d) {
+    if (!d) return '';
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + String(d.getDate()).padStart(2,'0') + ' ' + d.getFullYear();
+  }
+
+  const expDate = parseExpDate(expiredRaw.trim());
+  const banner  = document.getElementById('sim-status-banner');
+  const bannerIcon = document.getElementById('sim-banner-icon');
+  const bannerText = document.getElementById('sim-banner-text');
+  const expEl   = document.getElementById('info-expired');
+
+  if (expDate) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const daysLeft = Math.round((expDate - today) / 86400000);
+    const dateStr  = fmtExpDate(expDate);
+    const daysStr  = daysLeft < 0 ? '' : ` (${daysLeft} μέρες)`;
+    expEl.textContent = dateStr + daysStr;
+
+    let toastIcon, toastMsg, toastCls, simBannerCls;
+
+    if (daysLeft < 0) {
+      expEl.className = 'info-row-val expired';
+      expEl.textContent = dateStr + ' ⚠️ Έληξε';
+      banner.className = 'sim-err'; bannerIcon.textContent = '❌';
+      bannerText.className = 'sim-banner-text err';
+      bannerText.textContent = 'ΠΡΟΣΟΧΗ η κάρτα SIM έχει λήξει!';
+      toastIcon = '❌'; toastMsg = 'ΠΡΟΣΟΧΗ η κάρτα SIM έχει λήξει!'; toastCls = 'toast-err err';
+      if (!window._simAlertShown) {
+        window._simAlertShown = true;
+        setTimeout(() => { hapticFeedback([80,50,80,50,80]); showAlert('📵 Κάρτα SIM', 'ΠΡΟΣΟΧΗ η κάρτα SIM έχει λήξει!', 'Ημ/νία λήξης: ' + dateStr); }, 800);
+      }
+    } else if (daysLeft <= 30) {
+      expEl.className = 'info-row-val expired';
+      banner.className = 'sim-err'; bannerIcon.textContent = '⚠️';
+      bannerText.className = 'sim-banner-text err';
+      bannerText.textContent = `Η SIM λήγει σε ${daysLeft} μέρες!`;
+      toastIcon = '⚠️'; toastMsg = `Η SIM λήγει σε ${daysLeft} μέρες!`; toastCls = 'toast-err err';
+    } else {
+      expEl.className = 'info-row-val expired-ok';
+      banner.className = 'sim-ok'; bannerIcon.textContent = '✅';
+      bannerText.className = 'sim-banner-text ok';
+      bannerText.textContent = 'Η SIM είναι ενεργοποιημένη!';
+      toastIcon = '✅'; toastMsg = 'Η SIM είναι ενεργοποιημένη!'; toastCls = 'toast-ok ok';
+    }
+    // Show floating toast on Ζυγαριά tab for 4 seconds
+    showSimToast(toastIcon, toastMsg, toastCls);
+  } else {
+    expEl.textContent = '—'; expEl.className = 'info-row-val';
+    banner.className = ''; banner.style.display = 'none';
+  }
+}
+
+// ── NOTES ──
+function restoreNotes() {
+  const saved = localStorage.getItem(notesKey()) || '';
+  const savedTime = localStorage.getItem(notesKey() + '_time') || '';
+  document.getElementById('notes-textarea').value = saved;
+  if (saved && savedTime) {
+    document.getElementById('notes-saved-msg').textContent = '✓ Αποθηκεύτηκε: ' + savedTime;
+    document.getElementById('notes-saved-msg').style.color = '#666';
+  } else {
+    document.getElementById('notes-saved-msg').textContent = '';
+  }
+}
+function saveNotes() {
+  const text = document.getElementById('notes-textarea').value;
+  const now = new Date();
+  const timeStr = String(now.getDate()).padStart(2,'0') + '/' + String(now.getMonth()+1).padStart(2,'0') + '/' + now.getFullYear()
+    + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  localStorage.setItem(notesKey(), text);
+  localStorage.setItem(notesKey() + '_time', timeStr);
+  const msg = document.getElementById('notes-saved-msg');
+  msg.textContent = '✓ Αποθηκεύτηκε: ' + timeStr;
+  msg.style.color = '#4a9e4a';
+  setTimeout(() => { msg.style.color = '#666'; }, 3000);
+}
+function clearNotes() {
+  if (!document.getElementById('notes-textarea').value.trim()) return;
+  showConfirm('Θέλετε να διαγραφούν οι σημειώσεις;', yes => {
+    if (!yes) return;
+    document.getElementById('notes-textarea').value = '';
+    localStorage.removeItem(notesKey());
+    localStorage.removeItem(notesKey() + '_time');
+    document.getElementById('notes-saved-msg').textContent = '';
+  });
+}
+
+// ── TARE ──
+function doTare() {
+  if (!allFeeds.length) { showAlert('Σφάλμα', 'Δεν υπάρχουν δεδομένα ακόμα', ''); return; }
+  const latest = allFeeds[allFeeds.length - 1];
+  tareWeight = parseFloat(latest.field1); tareDate = latest.created_at;
+  document.getElementById('btn-tare').disabled = true;
+  hapticFeedback(25);
+  updateTareDiff(tareWeight);
+  // Αποθήκευση ΜΟΝΟ στο Google Sheet (στήλη G) - όχι τοπικά στο κινητό
+  const sheetValue = tareWeight.toFixed(3) + ' kg - ' + fmtDate(tareDate);
+  saveTareToSheet(sheetValue);
+  if (userRow) setChannelTare(activeChannelIndex, sheetValue);
+}
+function doClear() {
+  if (tareWeight === null) return;
+  showConfirm('Θέλετε να διαγραφεί η μέτρηση;', yes => {
+    if (!yes) return;
+    tareWeight = null; tareDate = null;
+    document.getElementById('tare-diff').textContent = '—';
+    document.getElementById('tare-ref').textContent = 'Πατήστε TARE για να αποθηκεύσετε το τρέχον βάρος';
+    document.getElementById('btn-tare').disabled = false;
+    clearTareFromSheet();
+    if (userRow) setChannelTare(activeChannelIndex, '');
+  });
+}
+function updateTareDiff(currentWeight) {
+  if (tareWeight === null) return;
+  const grams = Math.round((currentWeight - tareWeight) * 1000);
+  document.getElementById('tare-diff').textContent = fmtSignedGrams(grams);
+  document.getElementById('tare-ref').textContent = tareDate
+    ? ' ' + tareWeight.toFixed(3) + ' kg  (' + fmtDate(tareDate) + ')'
+    : ' ' + tareWeight.toFixed(3) + ' kg  (χειροκίνητη τιμή από το sheet)';
+}
+// Διαβάζει τιμή της μορφής "34.601 kg - 21/06/2026 - 22:38" και επιστρέφει { weight, dateISO }
+function parseSheetTareValue(str) {
+  if (!str) return null;
+  const s = String(str).trim();
+  if (!s) return null;
+  // Πλήρης μορφή (γράφεται από την ίδια την εφαρμογή όταν πατάς TARE): "34.601 kg - 21/06/2026 - 22:38"
+  const m = s.match(/^([\d.,]+)\s*kg\s*-\s*(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}):(\d{2})/);
+  if (m) {
+    const weight = parseFloat(m[1].replace(',', '.'));
+    const day = parseInt(m[2], 10), month = parseInt(m[3], 10), year = parseInt(m[4], 10);
+    const hour = parseInt(m[5], 10), minute = parseInt(m[6], 10);
+    if (!isNaN(weight)) {
+      const dateObj = new Date(year, month - 1, day, hour, minute, 0);
+      if (!isNaN(dateObj.getTime())) return { weight, dateISO: dateObj.toISOString() };
+    }
+  }
+  // Απλός αριθμός (π.χ. γράφτηκε χειροκίνητα στο sheet, χωρίς ημερομηνία) -> δεκτό ως TARE
+  const numMatch = s.match(/^(\d+(?:[.,]\d+)?)/);
+  if (numMatch) {
+    const weight = parseFloat(numMatch[1].replace(',', '.'));
+    if (!isNaN(weight)) return { weight, dateISO: null };
+  }
+  return null;
+}
+function restoreTare() {
+  tareWeight = null; tareDate = null;
+  document.getElementById('tare-diff').textContent = '—';
+  document.getElementById('tare-ref').textContent = 'Πατήστε TARE για να αποθηκεύσετε το τρέχον βάρος';
+  document.getElementById('btn-tare').disabled = false;
+  // Πηγή αλήθειας: ΜΟΝΟ η στήλη G του Google Sheet - καθόλου τοπική αποθήκευση στο κινητό
+  const sheetVal = getChannelTare(activeChannelIndex);
+  const parsed = parseSheetTareValue(sheetVal);
+  if (parsed) {
+    tareWeight = parsed.weight; tareDate = parsed.dateISO;
+    document.getElementById('btn-tare').disabled = true;
+    document.getElementById('tare-ref').textContent = parsed.dateISO
+      ? 'Ref: ' + tareWeight.toFixed(3) + ' kg  (' + fmtDate(tareDate) + ')'
+      : 'Ref: ' + tareWeight.toFixed(3) + ' kg  (χειροκίνητη τιμή από το sheet)';
+  }
+}
+
+function toggleLastReadings() {
+  const on = document.getElementById('toggle-last').checked;
+  document.getElementById('toggle-label').textContent = on ? 'ON' : 'OFF';
+  document.getElementById('prev-panel').classList.toggle('visible', on);
+}
+
+setInterval(() => { if (CHANNEL) loadData(); }, 120000);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+
+<!-- HUMIDITY TOAST -->
+<div id="hum-toast">💧 Αυξημένη υγρασία, πιθανή βροχόπτωση στη τοποθεσία αυτή!</div>
+
+<!-- PUSH TOAST -->
+<div id="push-toast">
+  <div class="push-toast-icon" id="push-toast-icon">🔔</div>
+  <div>
+    <div class="push-toast-title" id="push-toast-title"></div>
+    <div class="push-toast-msg"   id="push-toast-msg"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDGMWEOc3TUVco2WR1j8bABLZux-DmnWVo",
+  authDomain: "ibeescale.firebaseapp.com",
+  projectId: "ibeescale",
+  storageBucket: "ibeescale.firebasestorage.app",
+  messagingSenderId: "590028727937",
+  appId: "1:590028727937:web:a2cf6808cd0c72f896cf80"
+};
+const VAPID_KEY = 'BKtKprLcrT54XA4CJSNLN-UwDIVV1sY-sXrNhPHzpeyWUiDEuoU39PMpbDqQ-93bKOEUZN4S8EwxdJgin0eymwg';
+
+const fbApp     = initializeApp(FIREBASE_CONFIG);
+const messaging = getMessaging(fbApp);
+
+// ── Καταχώρηση service worker αποκλειστικά για FCM (background push) ──
+// Ξεχωριστό από το sw.js (PWA cache), για να μη μπλέκονται οι δύο ρόλοι.
+let _fcmSwReg = null;
+async function getFcmServiceWorker() {
+  if (_fcmSwReg) return _fcmSwReg;
+  _fcmSwReg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+  await navigator.serviceWorker.ready;
+  return _fcmSwReg;
+}
+
+// Toast helper
+window.showPushToast = function(icon, title, msg) {
+  const t = document.getElementById('push-toast');
+  document.getElementById('push-toast-icon').textContent  = icon;
+  document.getElementById('push-toast-title').textContent = title;
+  document.getElementById('push-toast-msg').textContent   = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 5000);
+};
+
+// Foreground notification
+onMessage(messaging, payload => {
+  const title = payload.notification?.title || 'Ζυγαριά';
+  let body = payload.notification?.body || '';
+
+  // Αν έχουμε τοπικά δεδομένα, αντικαθιστούμε το body με τη μορφή "34.601 kg - -47 gr"
+  try {
+    if (window.allFeeds && window.allFeeds.length >= 2) {
+      const latest = window.allFeeds[window.allFeeds.length - 1];
+      const prev   = window.allFeeds[window.allFeeds.length - 2];
+      const weightNow = parseFloat(latest.field1);
+      const weightPrev = parseFloat(prev.field1);
+      if (!isNaN(weightNow) && !isNaN(weightPrev)) {
+        const grams = Math.round((weightNow - weightPrev) * 1000);
+        body = weightNow.toFixed(3) + ' kg - ' + fmtSignedGrams(grams);
+      }
+    }
+  } catch(e) {}
+
+  window.showPushToast('🔔', title, body);
+});
+
+// Ενεργοποίηση + αποθήκευση token στο Google Sheet (μέσω Apps Script, action=saveToken)
+window._requestNotificationPermission = async function() {
+  const btn    = document.getElementById('notif-btn');
+  const infoEl = document.getElementById('notif-info');
+  infoEl.textContent = 'Αναμονή...';
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      infoEl.textContent = '⚠️ Δεν δόθηκε άδεια από τον browser.';
+      return;
+    }
+    const reg   = await getFcmServiceWorker();
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+    if (token) {
+      const user = window.currentUser || localStorage.getItem('rememberMe_user') || 'unknown';
+
+      // Αποθήκευση του token στο Google Sheet, δίπλα στη γραμμή του χρήστη (στήλη fcmToken).
+      // Το Apps Script αντικαθιστά ό,τι token υπήρχε ήδη για τον χρήστη (1 ενεργό token/χρήστη).
+      const res = await fetchJSONP({ action: 'saveToken', user, token });
+      if (!res || !res.ok) {
+        infoEl.textContent = '⚠️ Σφάλμα αποθήκευσης token στο sheet.';
+        return;
+      }
+
+      localStorage.setItem('fcm_token', token);
+      localStorage.setItem('fcm_token_user', user); // ποιανού χρήστη είναι ενεργό αυτό το token
+      btn.style.display = 'none';
+      document.getElementById('notif-disable-btn').style.display = 'block';
+      infoEl.textContent = '✅ Ενεργοποιημένες';
+      if (window.hapticFeedback) window.hapticFeedback([15,40,15]);
+      window.showPushToast('✅', 'Ειδοποιήσεις', 'Ενεργοποιήθηκαν επιτυχώς!');
+    }
+  } catch(e) {
+    infoEl.textContent = 'Σφάλμα: ' + e.message;
+  }
+};
+
+// Απενεργοποίηση ειδοποιήσεων (διαγραφή token από το Google Sheet)
+window._disableNotifications = async function() {
+  const infoEl = document.getElementById('notif-info');
+  infoEl.textContent = 'Απενεργοποίηση...';
+  try {
+    const user = window.currentUser || localStorage.getItem('fcm_token_user') || localStorage.getItem('rememberMe_user');
+    if (user) {
+      await fetchJSONP({ action: 'deleteToken', user });
+    }
+    localStorage.removeItem('fcm_token');
+    localStorage.removeItem('fcm_token_user');
+    document.getElementById('notif-btn').style.display = 'block';
+    document.getElementById('notif-disable-btn').style.display = 'none';
+    infoEl.textContent = '🔕 Απενεργοποιημένες';
+    window.showPushToast('🔕', 'Ειδοποιήσεις', 'Απενεργοποιήθηκαν.');
+  } catch(e) {
+    infoEl.textContent = 'Σφάλμα: ' + e.message;
+  }
+};
+
+// Επαναφορά κατάστασης κουμπιών — ΠΑΝΤΑ σε σχέση με τον ΤΡΕΧΟΝ συνδεδεμένο χρήστη,
+// όχι απλά "υπάρχει granted permission/token κάπου στη συσκευή"
+window.refreshNotifButtonState = function() {
+  const btn  = document.getElementById('notif-btn');
+  const dis  = document.getElementById('notif-disable-btn');
+  const info = document.getElementById('notif-info');
+  if (!btn || !dis) return;
+  const tokenUser = localStorage.getItem('fcm_token_user');
+  const isEnabledForThisUser =
+    Notification.permission === 'granted' &&
+    !!localStorage.getItem('fcm_token') &&
+    !!window.currentUser &&
+    tokenUser === window.currentUser;
+  btn.style.display  = isEnabledForThisUser ? 'none'  : 'block';
+  dis.style.display  = isEnabledForThisUser ? 'block' : 'none';
+  if (info) info.textContent = isEnabledForThisUser ? '✅ Ενεργοποιημένες' : '';
+};
+window.addEventListener('load', () => window.refreshNotifButtonState());
+// ΣΗΜΕΙΩΣΗ: Δεν χρειάζεται πια έλεγχος "αναντιστοιχίας καναλιών" όπως με το Firestore —
+// το Apps Script διαβάζει ΖΩΝΤΑΝΑ τη στήλη C (channel) του Google Sheet κάθε φορά που
+// έρχεται νέα μέτρηση, άρα ποτέ δεν "παγιδεύεται" σε παλιά λίστα καναλιών.
+</script>
+</body>
+</html>

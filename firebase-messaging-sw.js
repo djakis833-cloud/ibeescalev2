@@ -8,12 +8,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-com
 
 // Ίδιο config με αυτό μέσα στο index.html
 firebase.initializeApp({
-  apiKey: "AIzaSyDGMWEOc3TUVco2WR1j8bABLZux-DmnWVo",
-  authDomain: "ibeescale.firebaseapp.com",
-  projectId: "ibeescale",
-  storageBucket: "ibeescale.firebasestorage.app",
-  messagingSenderId: "590028727937",
-  appId: "1:590028727937:web:a2cf6808cd0c72f896cf80"
+  apiKey: "AIzaSyDL9_8GoFn6Sqk946W8v_qhxTAHP8ZK_FY",
+  authDomain: "ibeescale-gpt.firebaseapp.com",
+  projectId: "ibeescale-gpt",
+  storageBucket: "ibeescale-gpt.firebasestorage.app",
+  messagingSenderId: "603006359755",
+  appId: "1:603006359755:web:d87f503fd468ec38f8a34e"
 });
 
 const messaging = firebase.messaging();

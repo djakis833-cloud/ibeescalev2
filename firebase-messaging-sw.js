@@ -20,16 +20,64 @@ const messaging = firebase.messaging();
 
 // Εμφάνιση ειδοποίησης όταν η εφαρμογή είναι ΚΛΕΙΣΤΗ ή στο background.
 // (Όταν η εφαρμογή είναι ανοιχτή/foreground, αναλαμβάνει το onMessage() μέσα στο index.html.)
+//
+// ΣΗΜΑΝΤΙΚΟ: Ο κώδικας παρακάτω περιμένει το backend (π.χ. Cloud Function) να στέλνει
+// στο "data" payload του FCM μηνύματος ένα πεδίο "type" με μία από τις τιμές:
+//   "new_data"     -> 📡 νέα μέτρηση
+//   "weight_drop"  -> ⚠️ μεγάλη πτώση βάρους (>2.5 kg)
+//   "low_battery"  -> 🔋 χαμηλή μπαταρία (<2.9v)
+// καθώς και τα πεδία: scaleName, weight, weightDiff, time, battery (ό,τι χρειάζεται
+// για κάθε περίπτωση). Αν τα ονόματα των πεδίων στο δικό σου backend είναι διαφορετικά,
+// άλλαξέ τα μέσα στη συνάρτηση buildNotification παρακάτω.
+
+function buildNotification(data) {
+  data = data || {};
+
+  const scaleName  = data.scaleName  || 'Ζυγαριά';
+  const weight     = data.weight     || '-';
+  const weightDiff = data.weightDiff || '-';
+  const time       = data.time       || new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
+  const battery    = data.battery    || '-';
+
+  switch (data.type) {
+    case 'weight_drop':
+      return {
+        title: '⚠️ Μεγάλη πτώση βάρους',
+        body: `"${scaleName}"\n${weight} kg - ${weightDiff} kg - ${time}`,
+        tag: 'scale-weight-drop'
+      };
+
+    case 'low_battery':
+      return {
+        title: '🔋 Χαμηλή μπαταρία',
+        body: `"${scaleName}" - ${battery} V`,
+        tag: 'scale-low-battery'
+      };
+
+    case 'new_data':
+    default:
+      return {
+        title: `📡 Νέα μέτρηση για "${scaleName}"`,
+        body: `${weight} kg - ${weightDiff} kg - ${time}`,
+        tag: (data.channel ? ('scale-new-data-' + data.channel) : 'scale-new-data')
+      };
+  }
+}
+
 messaging.onBackgroundMessage((payload) => {
-  const title = (payload.notification && payload.notification.title) || 'Ζυγαριά Κυψέλης';
-  const body  = (payload.notification && payload.notification.body)  || 'Νέα μέτρηση';
+  const data = payload.data || {};
+  const built = buildNotification(data);
+
+  // Αν το backend στέλνει δικό του "notification" title/body, αυτά έχουν προτεραιότητα.
+  const title = (payload.notification && payload.notification.title) || built.title;
+  const body  = (payload.notification && payload.notification.body)  || built.body;
 
   self.registration.showNotification(title, {
     body: body,
     icon: 'icon-192.png',
     badge: 'icon-192.png',
-    tag: (payload.data && payload.data.channel) ? ('scale-' + payload.data.channel) : 'scale-update',
-    data: payload.data || {}
+    tag: built.tag,
+    data: data
   });
 });
 

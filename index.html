@@ -493,7 +493,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.8.0</div>
+    <div class="login-version">ver. 15.8.2</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -769,7 +769,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.2</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2203,13 +2203,38 @@ window.showPushToast = function(icon, title, msg) {
 };
 
 // Foreground notification
+// ΣΗΜΕΙΩΣΗ: Το backend πρέπει να στέλνει ΜΟΝΟ "data" payload (όχι "notification"),
+// ώστε η μορφοποίηση να είναι πάντα ίδια εδώ ΚΑΙ στο firebase-messaging-sw.js
+// (buildNotification), είτε η εφαρμογή είναι foreground είτε background/κλειστή.
+function buildForegroundNotification(data) {
+  data = data || {};
+
+  const scaleName  = data.scaleName  || 'Ζυγαριά';
+  const weight     = data.weight     || '-';
+  const weightDiff = data.weightDiff || '-';
+  const time       = data.time       || new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
+  const battery    = data.battery    || '-';
+
+  switch (data.type) {
+    case 'weight_drop':
+      return { icon: '⚠️', title: 'Μεγάλη πτώση βάρους', body: `"${scaleName}"\n${weight} kg - ${weightDiff} kg - ${time}` };
+    case 'low_battery':
+      return { icon: '🔋', title: 'Χαμηλή μπαταρία', body: `"${scaleName}" - ${battery} V` };
+    case 'new_data':
+    default:
+      return { icon: '📡', title: `Νέα μέτρηση για "${scaleName}"`, body: `${weight} kg - ${weightDiff} kg - ${time}` };
+  }
+}
+
 onMessage(messaging, payload => {
-  const title = payload.notification?.title || 'Ζυγαριά';
-  let body = payload.notification?.body || '';
+  const data = payload.data || {};
+  let { icon, title, body } = buildForegroundNotification(data);
 
   // Αν έχουμε τοπικά δεδομένα, αντικαθιστούμε το body με τη μορφή "34.601 kg - -47 gr"
+  // (μόνο για type new_data — για weight_drop/low_battery κρατάμε ό,τι στέλνει το backend)
   try {
-    if (window.allFeeds && window.allFeeds.length >= 2) {
+    if (data.type !== 'weight_drop' && data.type !== 'low_battery' &&
+        window.allFeeds && window.allFeeds.length >= 2) {
       const latest = window.allFeeds[window.allFeeds.length - 1];
       const prev   = window.allFeeds[window.allFeeds.length - 2];
       const weightNow = parseFloat(latest.field1);
@@ -2221,7 +2246,7 @@ onMessage(messaging, payload => {
     }
   } catch(e) {}
 
-  window.showPushToast('🔔', title, body);
+  window.showPushToast(icon, title, body);
 });
 
 // Ενεργοποίηση + αποθήκευση token στο Google Sheet (μέσω Apps Script, action=saveToken)

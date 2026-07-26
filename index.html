@@ -493,7 +493,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.8.2</div>
+    <div class="login-version">ver. 15.8.3</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -769,7 +769,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.2</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.3</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2187,7 +2187,19 @@ const messaging = getMessaging(fbApp);
 let _fcmSwReg = null;
 async function getFcmServiceWorker() {
   if (_fcmSwReg) return _fcmSwReg;
-  _fcmSwReg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+  // ΣΗΜΑΝΤΙΚΟ: το firebase-messaging-sw.js καταχωρείται με ΔΙΚΟ ΤΟΥ, αποκλειστικό
+  // scope ('./firebase-cloud-messaging-push-scope' — επίσημη σύσταση Google/Firebase
+  // για την περίπτωση που υπάρχει ΚΑΙ άλλο, δικό μας service worker στο ίδιο site).
+  // Χωρίς αυτό, τόσο το sw.js όσο και το firebase-messaging-sw.js καταχωρούνταν στο
+  // ΙΔΙΟ scope ('./'), και ένα scope μπορεί να έχει μόνο ΕΝΑ ενεργό service worker —
+  // όποιο registration γινόταν τελευταίο "έδιωχνε" το άλλο. Όταν "νικούσε" το sw.js
+  // (που δεν έχει κώδικα για push events), τα push μηνύματα έφταναν στη συσκευή
+  // (το FCM επέστρεφε ok:true/200) αλλά ΚΑΝΕΝΑΣ ενεργός κώδικας δεν τα έπιανε για
+  // να εμφανίσει ειδοποίηση — γι' αυτό η ασυνέπεια.
+  _fcmSwReg = await navigator.serviceWorker.register(
+    'firebase-messaging-sw.js',
+    { scope: './firebase-cloud-messaging-push-scope' }
+  );
   await navigator.serviceWorker.ready;
   return _fcmSwReg;
 }

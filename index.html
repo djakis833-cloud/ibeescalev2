@@ -2234,7 +2234,7 @@ function buildForegroundNotification(data) {
       return { icon: '🔋', title: 'Χαμηλή μπαταρία', body: `"${scaleName}" - ${battery} V` };
     case 'new_data':
     default:
-      return { icon: '📡', title: `Νέα μέτρηση για "${scaleName}"`, body: `${weight} kg - ${weightDiff} kg - ${time}` };
+      return { icon: '📡', title: `Νέα μέτρηση για "${scaleName}"`, body: `${weight} kg -- ${weightDiff} -- ${time}` };
   }
 }
 

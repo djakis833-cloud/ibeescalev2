@@ -1,7 +1,7 @@
 // sw.js — Κύριο Service Worker του PWA (cache / offline / installability).
 // Ξεχωριστό από το firebase-messaging-sw.js, που κάνει ΜΟΝΟ background push.
 
-const CACHE_VERSION = 'ibeescale-v1';
+const CACHE_VERSION = 'ibeescale-v2';
 const APP_SHELL = [
   './',
   'index.html',

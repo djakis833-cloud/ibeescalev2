@@ -58,7 +58,7 @@ function buildNotification(data) {
     default:
       return {
         title: `📡 Νέα μέτρηση για "${scaleName}"`,
-        body: `${weight} kg -- ${weightDiff}  -- ${time}`,
+        body: `${weight} kg -- ${weightDiff} -- ${time}`,
         tag: (data.channel ? ('scale-new-data-' + data.channel) : 'scale-new-data')
       };
   }

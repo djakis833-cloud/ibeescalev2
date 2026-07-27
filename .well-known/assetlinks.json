@@ -1,1 +1,8 @@
-
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.djakis833_cloud.twa",
+        "sha256_cert_fingerprints": ["CF:AA:21:BE:50:3F:F3:09:06:A4:26:84:52:27:01:91:FA:7C:76:B1:EF:C7:A0:1D:7F:52:87:23:43:57:3E:E1"]
+      }
+    }]

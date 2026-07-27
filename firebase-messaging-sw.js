@@ -3,6 +3,14 @@
 // Πρέπει να βρίσκεται στη ΡΙΖΑ του site (ίδιο επίπεδο με το index.html),
 // ΟΧΙ μέσα σε υποφάκελο, αλλιώς το scope του δεν θα καλύπτει όλη την εφαρμογή.
 
+// ΣΗΜΑΝΤΙΚΟ: χωρίς αυτό, κάθε νέα έκδοση αυτού του service worker μπαίνει σε
+// "αναμονή" (waiting) αντί να ενεργοποιείται αμέσως — και επειδή αυτό το SW δεν
+// ελέγχει ποτέ καμία πλοηγήσιμη σελίδα (το scope του είναι αποκλειστικά για push),
+// η αναμονή μπορεί να μην λύνεται ποτέ μόνη της, με αποτέλεσμα να μένει "κολλημένη"
+// για πάντα η ΠΑΛΙΑ έκδοση ενεργή, ό,τι αλλαγές κι αν ανεβάσουμε στο αρχείο.
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 

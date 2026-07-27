@@ -493,7 +493,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.8.3</div>
+    <div class="login-version">ver. 15.8.4</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -769,7 +769,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.3</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.4</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2229,12 +2229,12 @@ function buildForegroundNotification(data) {
 
   switch (data.type) {
     case 'weight_drop':
-      return { icon: '⚠️', title: 'Μεγάλη πτώση βάρους', body: `"${scaleName}"\n${weight} kg - ${weightDiff} kg - ${time}` };
+      return { icon: '⚠️', title: 'Μεγάλη πτώση βάρους', body: `"${scaleName}"\n${weight} kg | ${weightDiff} | ${time}` };
     case 'low_battery':
       return { icon: '🔋', title: 'Χαμηλή μπαταρία', body: `"${scaleName}" - ${battery} V` };
     case 'new_data':
     default:
-      return { icon: '📡', title: `Νέα μέτρηση για "${scaleName}"`, body: `${weight} kg -- ${weightDiff} -- ${time}` };
+      return { icon: '📡', title: `Νέα μέτρηση για "${scaleName}"`, body: `${weight} kg | ${weightDiff} | ${time}` };
   }
 }
 
@@ -2242,7 +2242,7 @@ onMessage(messaging, payload => {
   const data = payload.data || {};
   let { icon, title, body } = buildForegroundNotification(data);
 
-  // Αν έχουμε τοπικά δεδομένα, αντικαθιστούμε το body με τη μορφή "34.601 kg - -47 gr"
+  // Αν έχουμε τοπικά δεδομένα, αντικαθιστούμε το βάρος/διαφορά με τη μορφή "34.601 kg | -47 gr | ..."
   // (μόνο για type new_data — για weight_drop/low_battery κρατάμε ό,τι στέλνει το backend)
   try {
     if (data.type !== 'weight_drop' && data.type !== 'low_battery' &&
@@ -2253,7 +2253,8 @@ onMessage(messaging, payload => {
       const weightPrev = parseFloat(prev.field1);
       if (!isNaN(weightNow) && !isNaN(weightPrev)) {
         const grams = Math.round((weightNow - weightPrev) * 1000);
-        body = weightNow.toFixed(3) + ' kg - ' + fmtSignedGrams(grams);
+        const time  = data.time || new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
+        body = weightNow.toFixed(3) + ' kg | ' + fmtSignedGrams(grams) + ' | ' + time;
       }
     }
   } catch(e) {}

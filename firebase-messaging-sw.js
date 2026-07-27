@@ -42,14 +42,14 @@ function buildNotification(data) {
   switch (data.type) {
     case 'weight_drop':
       return {
-        title: '⚠️ Μεγάλη πτώση βάρους για "${scaleName}"',
-        body: `"${scaleName}"\n${weight} kg - ${weightDiff} kg - ${time}`,
+        title: '⚠️ Μεγάλη πτώση βάρους',
+        body: `"${scaleName}"\n${weight} kg | ${weightDiff} | ${time}`,
         tag: 'scale-weight-drop'
       };
 
     case 'low_battery':
       return {
-        title: '🔋 Χαμηλή μπαταρία για "${scaleName}"',
+        title: '🔋 Χαμηλή μπαταρία',
         body: `"${scaleName}" - ${battery} V`,
         tag: 'scale-low-battery'
       };
@@ -58,7 +58,7 @@ function buildNotification(data) {
     default:
       return {
         title: `📡 Νέα μέτρηση για "${scaleName}"`,
-        body: `${weight} kg -- ${weightDiff} -- ${time}`,
+        body: `${weight} kg | ${weightDiff} | ${time}`,
         tag: (data.channel ? ('scale-new-data-' + data.channel) : 'scale-new-data')
       };
   }

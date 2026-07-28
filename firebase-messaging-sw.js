@@ -80,7 +80,7 @@ messaging.onBackgroundMessage((payload) => {
   const title = (payload.notification && payload.notification.title) || built.title;
   const body  = (payload.notification && payload.notification.body)  || built.body;
 
-  self.registration.showNotification(title, {
+  return self.registration.showNotification(title, {
     body: body,
     icon: 'icon-192.png',
     badge: 'icon-192.png',

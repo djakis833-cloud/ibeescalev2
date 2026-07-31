@@ -493,7 +493,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.8.6</div>
+    <div class="login-version">ver. 15.8.7</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -769,7 +769,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.6</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.8.7</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -1991,8 +1991,8 @@ async function populateInfoTab() {
     const today = new Date(); today.setHours(0,0,0,0);
     const daysLeft = Math.round((expDate - today) / 86400000);
     const dateStr  = fmtExpDate(expDate);
-    const daysStr  = daysLeft < 0 ? '' : ` - η SIM λήγει σε ${daysLeft} μέρες`;
-    expEl.textContent = dateStr + daysStr;
+    const daysStr  = daysLeft < 0 ? '' : `<br>η SIM λήγει σε ${daysLeft} μέρες`;
+    expEl.innerHTML = dateStr + daysStr;
 
     let toastIcon, toastMsg, toastCls, simBannerCls;
 

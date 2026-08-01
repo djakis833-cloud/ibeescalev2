@@ -282,6 +282,7 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 .compare-channels-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
 .compare-ch-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; color: #555; border: 1px solid #b0b0b0; background: #fff; cursor: pointer; border-radius: 20px; transition: background 0.2s, color 0.2s, border-color 0.2s; }
 .compare-ch-btn.active { background: #4a7fc9; border-color: #4a7fc9; color: #fff; }
+.compare-ch-btn.locked { cursor: default; }
 .graph-toggles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 4px; padding: 10px 12px; background: #d8d8d8; border-bottom: 1px solid #bbb; }
 .gtoggle-item { display: flex; align-items: center; gap: 6px; }
 .gt-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 16px; line-height: 1; flex-shrink: 0; }
@@ -493,7 +494,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.9.1</div>
+    <div class="login-version">ver. 15.9.2</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -768,7 +769,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.9.1</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.9.2</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -1685,12 +1686,12 @@ function renderCompareChannelsUI() {
   if (!container) return;
   compareSelectedChannels = new Set([activeChannelIndex]);
   container.innerHTML = CHANNELS.map((ch, i) =>
-    `<button type="button" class="compare-ch-btn${i === activeChannelIndex ? ' active' : ''}" id="cmp-ch-${i}" onclick="toggleCompareChannel(${i})">No ${i + 1}</button>`
+    `<button type="button" class="compare-ch-btn${i === activeChannelIndex ? ' active locked' : ''}" id="cmp-ch-${i}" onclick="toggleCompareChannel(${i})">No ${i + 1}</button>`
   ).join('');
 }
 function toggleCompareChannel(idx) {
+  if (idx === activeChannelIndex) return; // η επιλεγμένη ζυγαριά (Κυψέλη) δεν μπορεί να απενεργοποιηθεί από τη σύγκριση
   if (compareSelectedChannels.has(idx)) {
-    if (compareSelectedChannels.size <= 1) return; // πρέπει να μείνει τουλάχιστον 1 επιλεγμένη ζυγαριά
     compareSelectedChannels.delete(idx);
   } else {
     compareSelectedChannels.add(idx);

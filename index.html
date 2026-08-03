@@ -349,6 +349,19 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 .conn-info-toast-msg { font-size: 14px; font-weight: 700; line-height: 1.4; color: #222; }
 /* ── NOTIFICATIONS ── */
 .notif-wrap { margin: 0 10px 4px; background: #fff; border-radius: 12px; padding: 14px 16px; border: 1px solid #ddd; }
+.report-wrap { margin: 0 10px 4px; background: #fff; border-radius: 12px; padding: 14px 16px; border: 1px solid #ddd; }
+.report-days-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.report-days-row span { font-size: 14px; font-weight: 700; color: #333; }
+.btn-report { width: 100%; padding: 13px; background: #1a6dcc; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; cursor: pointer; transition: background 0.2s; }
+.btn-report:active { background: #1558a8; }
+#report-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2050; display: none; align-items: center; justify-content: center; padding: 20px; }
+#report-overlay.visible { display: flex; }
+.report-box { background: #fff; border-radius: 16px; padding: 20px; max-width: 360px; width: 100%; max-height: 82vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: alertPop 0.25s cubic-bezier(.34,1.56,.64,1); }
+.report-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.report-box-title { font-size: 17px; font-weight: 800; color: #111; }
+.report-box-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; line-height: 1; padding: 0 2px; }
+.report-text-pre { white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: #222; margin: 0; }
+.report-box-btns { display: flex; gap: 10px; margin-top: 16px; }
 .notif-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
 .btn-notif { width: 100%; padding: 13px; background: #555; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; cursor: pointer; transition: background 0.2s; }
 .notif-info { font-size: 12px; color: #888; text-align: center; margin-top: 8px; min-height: 16px; }
@@ -366,7 +379,7 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 /* ── Ομαλή μετάβαση χρωμάτων στο dark mode ── */
 html, body, .header, .weight-card, .sensors-card, .tare-card, .chart-card, .info-card, .info-section-title,
 .appearance-card, .bottom-nav, .nav-btn, .theme-toggle-top, .channel-switch-bar, .ch-pill, .ch-pill-btn,
-.notif-wrap, .graphs-header, .graph-block, .prev-panel, .prev-item, .notes-textarea, .range-input,
+.notif-wrap, .report-wrap, .report-box, .graphs-header, .graph-block, .prev-panel, .prev-item, .notes-textarea, .range-input,
 .range-mode-pill, .compare-ch-btn, .weight-value, .sensor-value, .diff-row, .last-time, .btn-logout,
 .badge, .refresh-top {
   transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
@@ -428,6 +441,12 @@ html.dark-mode .notes-textarea { background: #1a1a1a; border-color: #333; color:
 html.dark-mode .btn-notes-clear { background: #333; }
 html.dark-mode .btn-notes-clear:active { background: #555; }
 html.dark-mode .notif-wrap { background: #1a1a1a; border-color: #333; }
+html.dark-mode .report-wrap { background: #1a1a1a; border-color: #333; }
+html.dark-mode .report-days-row span { color: #ddd; }
+html.dark-mode .report-box { background: #232323; }
+html.dark-mode .report-box-title { color: #f0f0f0; }
+html.dark-mode .report-text-pre { color: #ddd; }
+html.dark-mode .report-box-close { color: #aaa; }
 html.dark-mode .notif-desc { color: #aaa; }
 html.dark-mode .notif-info { color: #999; }
 html.dark-mode .graphs-header { background: #1c1c1c; border-bottom-color: #333; }
@@ -494,7 +513,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.9.3</div>
+    <div class="login-version">ver. 15.10.0</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -544,6 +563,21 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <div class="confirm-btns">
       <button class="btn-confirm-yes" id="confirm-yes-btn" onclick="confirmAction(true)">Ναι</button>
       <button class="btn-confirm-no"  onclick="confirmAction(false)">Όχι</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REPORT MODAL ── -->
+<div id="report-overlay">
+  <div class="report-box">
+    <div class="report-box-header">
+      <div class="report-box-title">📊 Αναφορά Ζυγαριάς</div>
+      <button class="report-box-close" onclick="closeReport()">×</button>
+    </div>
+    <pre class="report-text-pre" id="report-text"></pre>
+    <div class="report-box-btns">
+      <button class="btn-notes-save" style="flex:1;" onclick="copyReport()">📋 Αντιγραφή</button>
+      <button class="btn-notes-clear" style="flex:1;" onclick="closeReport()">Κλείσιμο</button>
     </div>
   </div>
 </div>
@@ -769,7 +803,17 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.9.3</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.10.0</span></div>
+    </div>
+
+    <div class="info-section-title">Αναφορά</div>
+    <div class="report-wrap">
+      <div class="report-days-row">
+        <span>Αναφορά τελευταίων</span>
+        <input type="number" class="range-input" id="report-days-input" value="7" min="1" max="365" style="width:60px;">
+        <span>ημερών</span>
+      </div>
+      <button class="btn-report" onclick="generateReport()">📊 Δημιουργία Αναφοράς</button>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -1940,8 +1984,10 @@ async function populateInfoTab() {
   try {
     const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL}.json`);
     const data = await res.json();
-    document.getElementById('info-name').textContent = data.name || '—';
+    window.SCALE_NAME = data.name || '—';
+    document.getElementById('info-name').textContent = window.SCALE_NAME;
   } catch(e) {
+    window.SCALE_NAME = '—';
     document.getElementById('info-name').textContent = '—';
   }
 
@@ -2018,6 +2064,101 @@ async function populateInfoTab() {
   } else {
     expEl.textContent = '—'; expEl.className = 'info-row-val';
     banner.className = ''; banner.style.display = 'none';
+  }
+}
+
+// ── ΑΝΑΦΟΡΑ (REPORT) ──
+function generateReport() {
+  if (!allFeeds.length) { showAlert('Σφάλμα', 'Δεν υπάρχουν δεδομένα ακόμα', ''); return; }
+
+  const daysInput = document.getElementById('report-days-input');
+  let days = parseInt(daysInput.value);
+  if (!days || days < 1) days = 7;
+  daysInput.value = days;
+
+  const cutoff = Date.now() - days * 86400000;
+  const FM = getFieldMap();
+  const periodFeeds = allFeeds.filter(f => {
+    if (!f.field1 || f.field1 === '' || isNaN(parseFloat(f.field1))) return false;
+    return new Date(f.created_at).getTime() >= cutoff;
+  });
+
+  if (!periodFeeds.length) {
+    showAlert('Αναφορά', `Δεν βρέθηκαν μετρήσεις τις τελευταίες ${days} ημέρες.`, '');
+    return;
+  }
+
+  // ── Υψηλότερο / Χαμηλότερο βάρος ──
+  let maxWFeed = periodFeeds[0], minWFeed = periodFeeds[0];
+  periodFeeds.forEach(f => {
+    if (parseFloat(f.field1) > parseFloat(maxWFeed.field1)) maxWFeed = f;
+    if (parseFloat(f.field1) < parseFloat(minWFeed.field1)) minWFeed = f;
+  });
+
+  // ── Υψηλότερη / Χαμηλότερη θερμοκρασία ──
+  const tempFeeds = periodFeeds.filter(f => f[FM.temp] && f[FM.temp] !== '' && !isNaN(parseFloat(f[FM.temp])));
+  let maxTFeed = null, minTFeed = null;
+  tempFeeds.forEach(f => {
+    if (!maxTFeed || parseFloat(f[FM.temp]) > parseFloat(maxTFeed[FM.temp])) maxTFeed = f;
+    if (!minTFeed || parseFloat(f[FM.temp]) < parseFloat(minTFeed[FM.temp])) minTFeed = f;
+  });
+
+  // ── Υψηλότερη / Χαμηλότερη υγρασία ──
+  const humFeeds = periodFeeds.filter(f => f[FM.hum] && f[FM.hum] !== '' && !isNaN(parseFloat(f[FM.hum])));
+  let maxHFeed = null, minHFeed = null;
+  humFeeds.forEach(f => {
+    if (!maxHFeed || parseFloat(f[FM.hum]) > parseFloat(maxHFeed[FM.hum])) maxHFeed = f;
+    if (!minHFeed || parseFloat(f[FM.hum]) < parseFloat(minHFeed[FM.hum])) minHFeed = f;
+  });
+
+  // ── Υψηλότερη διαφορά βάρους ημέρας (σύγκριση τελευταίας μέτρησης κάθε ημέρας με την προηγούμενη) ──
+  const dayMap = new Map();
+  periodFeeds.forEach(f => {
+    const d = new Date(f.created_at);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const existing = dayMap.get(key);
+    if (!existing || new Date(f.created_at) > new Date(existing.created_at)) dayMap.set(key, f);
+  });
+  const dayEntries = Array.from(dayMap.values()).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  let maxDiffGrams = null, maxDiffFeed = null;
+  for (let i = 1; i < dayEntries.length; i++) {
+    const wNow  = parseFloat(dayEntries[i].field1);
+    const wPrev = parseFloat(dayEntries[i-1].field1);
+    const diffGrams = Math.round((wNow - wPrev) * 1000);
+    if (maxDiffGrams === null || diffGrams > maxDiffGrams) {
+      maxDiffGrams = diffGrams;
+      maxDiffFeed = dayEntries[i];
+    }
+  }
+
+  const name = window.SCALE_NAME || document.getElementById('info-name').textContent || '—';
+
+  const lines = [];
+  lines.push(`Σύμφωνα με τις μετρήσεις της ζυγαριάς ${name} για ${days} ημέρες προκύπτουν τα εξής :`);
+  lines.push('');
+  lines.push(`🔼 Υψηλότερο βάρος κυψέλης : ${parseFloat(maxWFeed.field1).toFixed(3)} kg στις ${fmtDate(maxWFeed.created_at)}`);
+  lines.push(`🔽 Χαμηλότερο βάρος κυψέλης : ${parseFloat(minWFeed.field1).toFixed(3)} kg στις ${fmtDate(minWFeed.created_at)}`);
+  if (maxDiffFeed) {
+    const sign = maxDiffGrams >= 0 ? '+' : '-';
+    lines.push(`⚖️ Υψηλότερη Διαφορά βάρους ημέρας : ${sign}${Math.abs(maxDiffGrams)}γρ στις ${fmtDate(maxDiffFeed.created_at)}`);
+  }
+  if (maxTFeed) lines.push(`🔼 Υψηλότερη θερμοκρασία : ${Math.round(parseFloat(maxTFeed[FM.temp]))}°C στις ${fmtDate(maxTFeed.created_at)}`);
+  if (minTFeed) lines.push(`🔽 Χαμηλότερη θερμοκρασία : ${Math.round(parseFloat(minTFeed[FM.temp]))}°C στις ${fmtDate(minTFeed.created_at)}`);
+  if (maxHFeed) lines.push(`🔼 Υψηλότερη υγρασία : ${Math.round(parseFloat(maxHFeed[FM.hum]))}% στις ${fmtDate(maxHFeed.created_at)}`);
+  if (minHFeed) lines.push(`🔽 Χαμηλότερη υγρασία : ${Math.round(parseFloat(minHFeed[FM.hum]))}% στις ${fmtDate(minHFeed.created_at)}`);
+
+  document.getElementById('report-text').textContent = lines.join('\n');
+  document.getElementById('report-overlay').classList.add('visible');
+}
+function closeReport() {
+  document.getElementById('report-overlay').classList.remove('visible');
+}
+function copyReport() {
+  const text = document.getElementById('report-text').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      hapticFeedback && hapticFeedback(40);
+    }).catch(() => {});
   }
 }
 

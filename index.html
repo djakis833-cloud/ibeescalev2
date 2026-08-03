@@ -538,7 +538,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.10.2</div>
+    <div class="login-version">ver. 15.11.0</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -746,6 +746,14 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       </div>
       <div class="tare-ref" id="tare-ref">Πατήστε TARE για να αποθηκεύσετε το τρέχον βάρος</div>
     </div>
+    <div class="report-wrap" style="margin-top:12px;">
+      <div class="report-days-row">
+        <span>Αναφορά τελευταίων</span>
+        <input type="number" class="range-input" id="report-days-input" value="7" min="1" max="365" style="width:60px;">
+        <span>ημερών</span>
+      </div>
+      <button class="btn-report" onclick="generateReport()">📊 Δημιουργία Αναφοράς</button>
+    </div>
   </div><!-- end tab-scale -->
 
   <!-- ══ TAB: ΓΡΑΦΗΜΑΤΑ ══ -->
@@ -828,17 +836,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.10.2</span></div>
-    </div>
-
-    <div class="info-section-title">Αναφορά</div>
-    <div class="report-wrap">
-      <div class="report-days-row">
-        <span>Αναφορά τελευταίων</span>
-        <input type="number" class="range-input" id="report-days-input" value="7" min="1" max="365" style="width:60px;">
-        <span>ημερών</span>
-      </div>
-      <button class="btn-report" onclick="generateReport()">📊 Δημιουργία Αναφοράς</button>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.11.0</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2136,7 +2134,15 @@ function generateReport() {
     if (!minHFeed || parseFloat(f[FM.hum]) < parseFloat(minHFeed[FM.hum])) minHFeed = f;
   });
 
-  // ── Υψηλότερη διαφορά βάρους ημέρας (σύγκριση τελευταίας μέτρησης κάθε ημέρας με την προηγούμενη) ──
+  // ── Υψηλότερη / Χαμηλότερη μπαταρία ──
+  const batFeeds = periodFeeds.filter(f => f[FM.bat] && f[FM.bat] !== '' && !isNaN(parseFloat(f[FM.bat])));
+  let maxBFeed = null, minBFeed = null;
+  batFeeds.forEach(f => {
+    if (!maxBFeed || parseFloat(f[FM.bat]) > parseFloat(maxBFeed[FM.bat])) maxBFeed = f;
+    if (!minBFeed || parseFloat(f[FM.bat]) < parseFloat(minBFeed[FM.bat])) minBFeed = f;
+  });
+
+  // ── Υψηλότερη / Χαμηλότερη διαφορά βάρους ημέρας (σύγκριση τελευταίας μέτρησης κάθε ημέρας με την προηγούμενη) ──
   const dayMap = new Map();
   periodFeeds.forEach(f => {
     const d = new Date(f.created_at);
@@ -2145,7 +2151,7 @@ function generateReport() {
     if (!existing || new Date(f.created_at) > new Date(existing.created_at)) dayMap.set(key, f);
   });
   const dayEntries = Array.from(dayMap.values()).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-  let maxDiffGrams = null, maxDiffFeed = null;
+  let maxDiffGrams = null, maxDiffFeed = null, minDiffGrams = null, minDiffFeed = null;
   for (let i = 1; i < dayEntries.length; i++) {
     const wNow  = parseFloat(dayEntries[i].field1);
     const wPrev = parseFloat(dayEntries[i-1].field1);
@@ -2153,6 +2159,10 @@ function generateReport() {
     if (maxDiffGrams === null || diffGrams > maxDiffGrams) {
       maxDiffGrams = diffGrams;
       maxDiffFeed = dayEntries[i];
+    }
+    if (minDiffGrams === null || diffGrams < minDiffGrams) {
+      minDiffGrams = diffGrams;
+      minDiffFeed = dayEntries[i];
     }
   }
 
@@ -2168,10 +2178,16 @@ function generateReport() {
     const sign = maxDiffGrams >= 0 ? '+' : '-';
     lines.push(`⚖️ Υψηλότερη Διαφορά βάρους ημέρας : ${sign}${Math.abs(maxDiffGrams)}γρ στις ${fmtDate(maxDiffFeed.created_at)}`);
   }
+  if (minDiffFeed) {
+    const signMin = minDiffGrams >= 0 ? '+' : '-';
+    lines.push(`⚖️ Χαμηλότερη Διαφορά βάρους ημέρας : ${signMin}${Math.abs(minDiffGrams)}γρ στις ${fmtDate(minDiffFeed.created_at)}`);
+  }
   if (maxTFeed) lines.push(`🔼 Υψηλότερη θερμοκρασία : ${Math.round(parseFloat(maxTFeed[FM.temp]))}°C στις ${fmtDate(maxTFeed.created_at)}`);
   if (minTFeed) lines.push(`🔽 Χαμηλότερη θερμοκρασία : ${Math.round(parseFloat(minTFeed[FM.temp]))}°C στις ${fmtDate(minTFeed.created_at)}`);
   if (maxHFeed) lines.push(`🔼 Υψηλότερη υγρασία : ${Math.round(parseFloat(maxHFeed[FM.hum]))}% στις ${fmtDate(maxHFeed.created_at)}`);
   if (minHFeed) lines.push(`🔽 Χαμηλότερη υγρασία : ${Math.round(parseFloat(minHFeed[FM.hum]))}% στις ${fmtDate(minHFeed.created_at)}`);
+  if (maxBFeed) lines.push(`🔼 Υψηλότερη μπαταρία : ${parseFloat(maxBFeed[FM.bat]).toFixed(2)}v στις ${fmtDate(maxBFeed.created_at)}`);
+  if (minBFeed) lines.push(`🔽 Χαμηλότερη μπαταρία : ${parseFloat(minBFeed[FM.bat]).toFixed(2)}v στις ${fmtDate(minBFeed.created_at)}`);
   window._lastReportPlainText = lines.join('\n');
 
   // ── Οπτική (HTML) έκδοση ──
@@ -2191,6 +2207,11 @@ function generateReport() {
     html += statRowHtml('stat-diff', '⚖', 'Υψηλότερη διαφορά βάρους ημέρας',
       `${sign}${Math.abs(maxDiffGrams)} <span class="runit">γρ</span>`, fmtDate(maxDiffFeed.created_at));
   }
+  if (minDiffFeed) {
+    const signMin = minDiffGrams >= 0 ? '+' : '-';
+    html += statRowHtml('stat-diff', '⚖', 'Χαμηλότερη διαφορά βάρους ημέρας',
+      `${signMin}${Math.abs(minDiffGrams)} <span class="runit">γρ</span>`, fmtDate(minDiffFeed.created_at));
+  }
 
   if (maxTFeed || minTFeed) {
     html += `<div class="report-section-label">🌡️ Θερμοκρασία</div>`;
@@ -2206,6 +2227,14 @@ function generateReport() {
       `${Math.round(parseFloat(maxHFeed[FM.hum]))}<span class="runit">%</span>`, fmtDate(maxHFeed.created_at));
     if (minHFeed) html += statRowHtml('stat-down', '▼', 'Χαμηλότερη υγρασία',
       `${Math.round(parseFloat(minHFeed[FM.hum]))}<span class="runit">%</span>`, fmtDate(minHFeed.created_at));
+  }
+
+  if (maxBFeed || minBFeed) {
+    html += `<div class="report-section-label">🔋 Μπαταρία</div>`;
+    if (maxBFeed) html += statRowHtml('stat-up', '▲', 'Υψηλότερη μπαταρία',
+      `${parseFloat(maxBFeed[FM.bat]).toFixed(2)}<span class="runit">v</span>`, fmtDate(maxBFeed.created_at));
+    if (minBFeed) html += statRowHtml('stat-down', '▼', 'Χαμηλότερη μπαταρία',
+      `${parseFloat(minBFeed[FM.bat]).toFixed(2)}<span class="runit">v</span>`, fmtDate(minBFeed.created_at));
   }
 
   document.getElementById('report-text').innerHTML = html;

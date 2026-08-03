@@ -362,6 +362,20 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 .report-box-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; line-height: 1; padding: 0 2px; }
 .report-text-pre { white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: #222; margin: 0; }
 .report-box-btns { display: flex; gap: 10px; margin-top: 16px; }
+.report-intro { font-size: 14px; color: #333; line-height: 1.55; margin-bottom: 6px; }
+.report-intro b { color: #111; }
+.report-section-label { font-size: 11.5px; font-weight: 800; color: #999; text-transform: uppercase; letter-spacing: 0.6px; margin: 16px 0 2px; }
+.report-stat-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #ececec; }
+.report-stat-row:last-child { border-bottom: none; }
+.report-stat-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.report-stat-icon.stat-up { background: #fdecd8; color: #d9760a; }
+.report-stat-icon.stat-down { background: #dceafb; color: #1a6dcc; }
+.report-stat-icon.stat-diff { background: #ecdcfb; color: #7a3cc2; }
+.report-stat-body { flex: 1; min-width: 0; }
+.report-stat-label { font-size: 12.5px; font-weight: 700; color: #777; }
+.report-stat-value { font-size: 16.5px; font-weight: 800; color: #111; margin-top: 1px; }
+.report-stat-value .runit { font-size: 13px; font-weight: 700; color: #666; }
+.report-stat-time { font-size: 11.5px; color: #999; margin-top: 2px; }
 .notif-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
 .btn-notif { width: 100%; padding: 13px; background: #555; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; cursor: pointer; transition: background 0.2s; }
 .notif-info { font-size: 12px; color: #888; text-align: center; margin-top: 8px; min-height: 16px; }
@@ -446,6 +460,17 @@ html.dark-mode .report-days-row span { color: #ddd; }
 html.dark-mode .report-box { background: #232323; }
 html.dark-mode .report-box-title { color: #f0f0f0; }
 html.dark-mode .report-text-pre { color: #ddd; }
+html.dark-mode .report-intro { color: #ccc; }
+html.dark-mode .report-intro b { color: #fff; }
+html.dark-mode .report-section-label { color: #888; }
+html.dark-mode .report-stat-row { border-bottom-color: #333; }
+html.dark-mode .report-stat-icon.stat-up { background: #4a3212; color: #f0a94a; }
+html.dark-mode .report-stat-icon.stat-down { background: #123049; color: #5aa8ec; }
+html.dark-mode .report-stat-icon.stat-diff { background: #38234c; color: #b78ce8; }
+html.dark-mode .report-stat-label { color: #999; }
+html.dark-mode .report-stat-value { color: #f0f0f0; }
+html.dark-mode .report-stat-value .runit { color: #aaa; }
+html.dark-mode .report-stat-time { color: #777; }
 html.dark-mode .report-box-close { color: #aaa; }
 html.dark-mode .notif-desc { color: #aaa; }
 html.dark-mode .notif-info { color: #999; }
@@ -513,7 +538,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.10.0</div>
+    <div class="login-version">ver. 15.10.1</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -574,7 +599,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="report-box-title">📊 Αναφορά Ζυγαριάς</div>
       <button class="report-box-close" onclick="closeReport()">×</button>
     </div>
-    <pre class="report-text-pre" id="report-text"></pre>
+    <div class="report-text-pre" id="report-text"></div>
     <div class="report-box-btns">
       <button class="btn-notes-save" style="flex:1;" onclick="copyReport()">📋 Αντιγραφή</button>
       <button class="btn-notes-clear" style="flex:1;" onclick="closeReport()">Κλείσιμο</button>
@@ -803,7 +828,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.10.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.10.1</span></div>
     </div>
 
     <div class="info-section-title">Αναφορά</div>
@@ -2133,6 +2158,7 @@ function generateReport() {
 
   const name = window.SCALE_NAME || document.getElementById('info-name').textContent || '—';
 
+  // ── Plain text version (για αντιγραφή) ──
   const lines = [];
   lines.push(`Σύμφωνα με τις μετρήσεις της ζυγαριάς ${name} για ${days} ημέρες προκύπτουν τα εξής :`);
   lines.push('');
@@ -2146,15 +2172,57 @@ function generateReport() {
   if (minTFeed) lines.push(`🔽 Χαμηλότερη θερμοκρασία : ${Math.round(parseFloat(minTFeed[FM.temp]))}°C στις ${fmtDate(minTFeed.created_at)}`);
   if (maxHFeed) lines.push(`🔼 Υψηλότερη υγρασία : ${Math.round(parseFloat(maxHFeed[FM.hum]))}% στις ${fmtDate(maxHFeed.created_at)}`);
   if (minHFeed) lines.push(`🔽 Χαμηλότερη υγρασία : ${Math.round(parseFloat(minHFeed[FM.hum]))}% στις ${fmtDate(minHFeed.created_at)}`);
+  window._lastReportPlainText = lines.join('\n');
 
-  document.getElementById('report-text').textContent = lines.join('\n');
+  // ── Οπτική (HTML) έκδοση ──
+  function statRowHtml(iconCls, icon, label, valueHtml, timeStr) {
+    return `<div class="report-stat-row">
+      <div class="report-stat-icon ${iconCls}">${icon}</div>
+      <div class="report-stat-body">
+        <div class="report-stat-label">${label}</div>
+        <div class="report-stat-value">${valueHtml}</div>
+        <div class="report-stat-time">${timeStr}</div>
+      </div>
+    </div>`;
+  }
+
+  let html = `<div class="report-intro">Σύμφωνα με τις μετρήσεις της ζυγαριάς <b>${name}</b> για <b>${days} ημέρες</b> προκύπτουν τα εξής:</div>`;
+
+  html += `<div class="report-section-label">⚖️ Βάρος</div>`;
+  html += statRowHtml('stat-up', '▲', 'Υψηλότερο βάρος κυψέλης',
+    `${parseFloat(maxWFeed.field1).toFixed(3)} <span class="runit">kg</span>`, fmtDate(maxWFeed.created_at));
+  html += statRowHtml('stat-down', '▼', 'Χαμηλότερο βάρος κυψέλης',
+    `${parseFloat(minWFeed.field1).toFixed(3)} <span class="runit">kg</span>`, fmtDate(minWFeed.created_at));
+  if (maxDiffFeed) {
+    const sign = maxDiffGrams >= 0 ? '+' : '-';
+    html += statRowHtml('stat-diff', '⚖', 'Υψηλότερη διαφορά βάρους ημέρας',
+      `${sign}${Math.abs(maxDiffGrams)} <span class="runit">γρ</span>`, fmtDate(maxDiffFeed.created_at));
+  }
+
+  if (maxTFeed || minTFeed) {
+    html += `<div class="report-section-label">🌡️ Θερμοκρασία</div>`;
+    if (maxTFeed) html += statRowHtml('stat-up', '▲', 'Υψηλότερη θερμοκρασία',
+      `${Math.round(parseFloat(maxTFeed[FM.temp]))}<span class="runit">°C</span>`, fmtDate(maxTFeed.created_at));
+    if (minTFeed) html += statRowHtml('stat-down', '▼', 'Χαμηλότερη θερμοκρασία',
+      `${Math.round(parseFloat(minTFeed[FM.temp]))}<span class="runit">°C</span>`, fmtDate(minTFeed.created_at));
+  }
+
+  if (maxHFeed || minHFeed) {
+    html += `<div class="report-section-label">💧 Υγρασία</div>`;
+    if (maxHFeed) html += statRowHtml('stat-up', '▲', 'Υψηλότερη υγρασία',
+      `${Math.round(parseFloat(maxHFeed[FM.hum]))}<span class="runit">%</span>`, fmtDate(maxHFeed.created_at));
+    if (minHFeed) html += statRowHtml('stat-down', '▼', 'Χαμηλότερη υγρασία',
+      `${Math.round(parseFloat(minHFeed[FM.hum]))}<span class="runit">%</span>`, fmtDate(minHFeed.created_at));
+  }
+
+  document.getElementById('report-text').innerHTML = html;
   document.getElementById('report-overlay').classList.add('visible');
 }
 function closeReport() {
   document.getElementById('report-overlay').classList.remove('visible');
 }
 function copyReport() {
-  const text = document.getElementById('report-text').textContent;
+  const text = window._lastReportPlainText || '';
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => {
       hapticFeedback && hapticFeedback(40);

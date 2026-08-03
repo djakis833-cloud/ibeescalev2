@@ -360,7 +360,7 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 .report-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .report-box-title { font-size: 17px; font-weight: 800; color: #111; }
 .report-box-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; line-height: 1; padding: 0 2px; }
-.report-text-pre { white-space: pre-wrap; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: #222; margin: 0; }
+.report-text-pre { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #222; margin: 0; }
 .report-box-btns { display: flex; gap: 10px; margin-top: 16px; }
 .report-intro { font-size: 14px; color: #333; line-height: 1.55; margin-bottom: 6px; }
 .report-intro b { color: #111; }
@@ -538,7 +538,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.10.1</div>
+    <div class="login-version">ver. 15.10.2</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -828,7 +828,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.10.1</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.10.2</span></div>
     </div>
 
     <div class="info-section-title">Αναφορά</div>
@@ -2176,14 +2176,7 @@ function generateReport() {
 
   // ── Οπτική (HTML) έκδοση ──
   function statRowHtml(iconCls, icon, label, valueHtml, timeStr) {
-    return `<div class="report-stat-row">
-      <div class="report-stat-icon ${iconCls}">${icon}</div>
-      <div class="report-stat-body">
-        <div class="report-stat-label">${label}</div>
-        <div class="report-stat-value">${valueHtml}</div>
-        <div class="report-stat-time">${timeStr}</div>
-      </div>
-    </div>`;
+    return `<div class="report-stat-row"><div class="report-stat-icon ${iconCls}">${icon}</div><div class="report-stat-body"><div class="report-stat-label">${label}</div><div class="report-stat-value">${valueHtml}</div><div class="report-stat-time">${timeStr}</div></div></div>`;
   }
 
   let html = `<div class="report-intro">Σύμφωνα με τις μετρήσεις της ζυγαριάς <b>${name}</b> για <b>${days} ημέρες</b> προκύπτουν τα εξής:</div>`;

@@ -538,7 +538,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.12.1</div>
+    <div class="login-version">ver. 15.12.2</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -836,7 +836,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.12.1</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.12.2</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2313,7 +2313,7 @@ function checkWeightJumpAlert(latest, grams) {
     'Η ζυγαριά κατέγραψε μεγάλη διαφορά βάρους (' + fmtSignedGrams(grams) + ') σε σχέση με την προηγούμενη μέτρηση. Τοποθετήσατε νέα κυψέλη επάνω στη ζυγαριά;',
     function(placedHive) {
       if (placedHive) {
-        showConfirm('Θέλετε να γίνει τώρα TARE στη ζυγαριά;', function(doTareNow) {
+        showConfirm('Θέλετε να γίνει αποθήκευση μέτρησης (TARE) στη ζυγαριά;', function(doTareNow) {
           if (doTareNow) doTare();
         });
       }

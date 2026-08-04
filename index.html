@@ -538,7 +538,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.12.0</div>
+    <div class="login-version">ver. 15.12.1</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -836,7 +836,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.12.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.12.1</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -1196,7 +1196,12 @@ function showConfirm(msg, cb) {
 }
 function confirmAction(yes) {
   document.getElementById('confirm-overlay').classList.remove('visible');
-  if (confirmCallback) { confirmCallback(yes); confirmCallback = null; }
+  // Σημαντικό: "πιάνουμε" και μηδενίζουμε το callback ΠΡΙΝ το εκτελέσουμε, ώστε αν
+  // το ίδιο το callback ανοίξει μια νέα (φωλιασμένη) ερώτηση με showConfirm(),
+  // το νέο confirmCallback να μην σβηστεί αμέσως μετά.
+  const cb = confirmCallback;
+  confirmCallback = null;
+  if (cb) cb(yes);
 }
 
 // ── PARSE CHANNELS ──

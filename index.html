@@ -538,7 +538,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.11.0</div>
+    <div class="login-version">ver. 15.12.0</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -836,7 +836,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.11.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.12.0</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -1519,6 +1519,11 @@ function updateUI() {
   animateWeightUpdate(weightNow);
   document.getElementById('last-time').textContent = 'Τελευταία μέτρηση: ' + fmtDate(latest.created_at);
   setConnBadge('conn-badge-last', latest);
+
+  if (prev) {
+    const jumpGrams = Math.round((weightNow - parseFloat(prev.field1)) * 1000);
+    checkWeightJumpAlert(latest, jumpGrams);
+  }
 
   if (prev) {
     document.getElementById('prev-weight').textContent = parseFloat(prev.field1).toFixed(3) + ' kg';
@@ -2285,6 +2290,30 @@ function clearNotes() {
     localStorage.removeItem(notesKey() + '_time');
     document.getElementById('notes-saved-msg').textContent = '';
   });
+}
+
+// ── Ειδοποίηση απότομης μεταβολής βάρους (πιθανή τοποθέτηση/αφαίρεση κυψέλης) ──
+// Ενεργοποιείται όταν η διαφορά βάρους (τρέχουσα μέτρηση vs προηγούμενη) είναι
+// πάνω από +4000 gr ή κάτω από -3000 gr. Ρωτάει μία φορά ανά νέα μέτρηση
+// (το created_at της τελευταίας μέτρησης αποθηκεύεται στο localStorage ώστε να
+// μην επαναλαμβάνεται η ερώτηση σε κάθε refresh όσο δεν αλλάζει η μέτρηση).
+function weightJumpAlertKey() { return 'weightJumpAlertShown_' + CHANNEL; }
+function checkWeightJumpAlert(latest, grams) {
+  if (isNaN(grams)) return;
+  if (grams <= 4000 && grams >= -3000) return; // εντός φυσιολογικού εύρους, δεν κάνουμε τίποτα
+  const key = weightJumpAlertKey();
+  if (localStorage.getItem(key) === latest.created_at) return; // ήδη ρωτήθηκε για αυτή τη μέτρηση
+  localStorage.setItem(key, latest.created_at);
+  showConfirm(
+    'Η ζυγαριά κατέγραψε μεγάλη διαφορά βάρους (' + fmtSignedGrams(grams) + ') σε σχέση με την προηγούμενη μέτρηση. Τοποθετήσατε νέα κυψέλη επάνω στη ζυγαριά;',
+    function(placedHive) {
+      if (placedHive) {
+        showConfirm('Θέλετε να γίνει τώρα TARE στη ζυγαριά;', function(doTareNow) {
+          if (doTareNow) doTare();
+        });
+      }
+    }
+  );
 }
 
 // ── TARE ──

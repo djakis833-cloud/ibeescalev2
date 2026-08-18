@@ -280,8 +280,8 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 .graphs-compare-row { display: none; border-top: 1px solid #bbb; padding-top: 10px; }
 .compare-toggle-line { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .compare-channels-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
-.compare-ch-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; color: #555; border: 1px solid #b0b0b0; background: #fff; cursor: pointer; border-radius: 20px; transition: background 0.2s, color 0.2s, border-color 0.2s; }
-.compare-ch-btn.active { background: #4a7fc9; border-color: #4a7fc9; color: #fff; }
+.compare-ch-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; color: var(--cmp-color, #555); border: 1px solid var(--cmp-color, #b0b0b0); background: #fff; cursor: pointer; border-radius: 20px; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.compare-ch-btn.active { background: var(--cmp-color, #4a7fc9); border-color: var(--cmp-color, #4a7fc9); color: #fff; }
 .compare-ch-btn.locked { cursor: default; }
 .graph-toggles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px 4px; padding: 10px 12px; background: #d8d8d8; border-bottom: 1px solid #bbb; }
 .gtoggle-item { display: flex; align-items: center; gap: 6px; }
@@ -484,8 +484,8 @@ html.dark-mode .range-label-sm { color: #999; }
 html.dark-mode .graph-toggles { background: #1e1e1e; border-bottom-color: #333; }
 html.dark-mode .gtoggle-label { color: #ddd; }
 html.dark-mode .graphs-compare-row { border-top-color: #333; }
-html.dark-mode .compare-ch-btn { background: #2a2a2a; border-color: #444; color: #bbb; }
-html.dark-mode .compare-ch-btn.active { background: #4a7fc9; border-color: #4a7fc9; color: #fff; }
+html.dark-mode .compare-ch-btn { background: #2a2a2a; border-color: var(--cmp-color, #444); color: var(--cmp-color, #bbb); }
+html.dark-mode .compare-ch-btn.active { background: var(--cmp-color, #4a7fc9); border-color: var(--cmp-color, #4a7fc9); color: #fff; }
 html.dark-mode .graph-block { background: #1a1a1a; }
 html.dark-mode .graph-block-title { color: #999; }
 html.dark-mode .graph-loading { color: #777; }
@@ -538,7 +538,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.13.0</div>
+    <div class="login-version">ver. 15.14.0</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -836,7 +836,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.13.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.14.0</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -997,16 +997,23 @@ document.addEventListener('DOMContentLoaded', updateThemeToggleUI);
 function isConnField6Available() {
   return getFieldMap().bat !== 'field6';
 }
-// Ελέγχει αν υπάρχει ΚΑΠΟΥ έγκυρη τιμή field6 (11 ή 22) σε όλο το ιστορικό του καναλιού
+// Κανονικοποιεί την τιμή τύπου σύνδεσης από το field6: δέχεται 11/111 -> WiFi, 22/222 -> GSM.
+function connRawNorm(raw) {
+  raw = String(raw || '').trim();
+  if (raw === '11' || raw === '111') return '11';
+  if (raw === '22' || raw === '222') return '22';
+  return '';
+}
+// Ελέγχει αν υπάρχει ΚΑΠΟΥ έγκυρη τιμή field6 (11/111 ή 22/222) σε όλο το ιστορικό του καναλιού
 function hasAnyConnData() {
-  return isConnField6Available() && Array.isArray(allFeeds) && allFeeds.some(f => f.field6 === '11' || f.field6 === '22');
+  return isConnField6Available() && Array.isArray(allFeeds) && allFeeds.some(f => connRawNorm(f.field6) !== '');
 }
 // Χρησιμοποιείται ΜΟΝΟ για τα badges στο tab Ζυγαριά (last-time / προηγούμενες μετρήσεις).
 // Αν το field6 δεν υπάρχει πουθενά στο ιστορικό, εμφανίζουμε ως προεπιλογή GSM.
 // Το tab Γραφήματα ΔΕΝ χρησιμοποιεί αυτή τη συνάρτηση, οπότε δεν επηρεάζεται από το fallback.
 function connInfo(feed) {
   if (!feed || !isConnField6Available()) return null;
-  const v = String(feed.field6 || '').trim();
+  const v = connRawNorm(feed.field6);
   if (v === '11') return { icon: '📶', text: 'WiFi', cls: 'conn-wifi' };
   if (v === '22') return { icon: '📡', text: 'GSM', cls: 'conn-gsm' };
   if (!hasAnyConnData()) return { icon: '📡', text: 'GSM', cls: 'conn-gsm' };
@@ -1789,7 +1796,7 @@ function renderCompareChannelsUI() {
   if (!container) return;
   compareSelectedChannels = new Set([activeChannelIndex]);
   container.innerHTML = CHANNELS.map((ch, i) =>
-    `<button type="button" class="compare-ch-btn${i === activeChannelIndex ? ' active locked' : ''}" id="cmp-ch-${i}" onclick="toggleCompareChannel(${i})">No ${i + 1}</button>`
+    `<button type="button" class="compare-ch-btn${i === activeChannelIndex ? ' active locked' : ''}" id="cmp-ch-${i}" style="--cmp-color:${compareColorFor(i)};" onclick="toggleCompareChannel(${i})">No ${i + 1}</button>`
   ).join('');
 }
 function toggleCompareChannel(idx) {
@@ -1870,7 +1877,7 @@ async function renderGraphs() {
 
   // Εμφάνιση του toggle "Σύνδεση" μόνο αν το field6 υπάρχει πραγματικά ως τύπος σύνδεσης σε αυτό το κανάλι/εύρος
   const connItem = document.getElementById('gtoggle-conn-item');
-  const hasConnData = isConnField6Available() && primaryFeeds.some(f => f.field6 === '11' || f.field6 === '22');
+  const hasConnData = isConnField6Available() && primaryFeeds.some(f => connRawNorm(f.field6) !== '');
   if (connItem) connItem.style.display = hasConnData ? 'flex' : 'none';
 
   const activeDefs = getGraphDefs().filter(d => document.getElementById(d.toggleId).checked && (d.id !== 'conn' || hasConnData));
@@ -1890,9 +1897,9 @@ async function renderGraphs() {
     activeDefs.forEach(def => {
       let vals, values;
       if (def.categorical) {
-        // Χαρτογράφηση 11->1 (WiFi), 22->2 (GSM), οτιδήποτε άλλο -> null
+        // Χαρτογράφηση 11/111->1 (WiFi), 22/222->2 (GSM), οτιδήποτε άλλο -> null
         vals = feeds.map(f => {
-          const raw = String(f[def.field] || '').trim();
+          const raw = connRawNorm(f[def.field]);
           if (raw === '11') return 1;
           if (raw === '22') return 2;
           return null;
@@ -1958,7 +1965,7 @@ function buildCompareChart(def, channelSeries, container) {
       const points = cs.feeds.map(f => {
         let y;
         if (def.categorical) {
-          const raw = String(f[def.field] || '').trim();
+          const raw = connRawNorm(f[def.field]);
           y = raw === '11' ? 1 : raw === '22' ? 2 : null;
         } else {
           y = f[def.field] ? parseFloat(f[def.field]) : null;

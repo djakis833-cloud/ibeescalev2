@@ -590,7 +590,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.17.2</div>
+    <div class="login-version">ver. 15.18.0</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -888,7 +888,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.17.2</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.18.0</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -1146,6 +1146,11 @@ let allFeeds = [], graphFeeds = [];
 // (γράφονται μόνο με field7 μέσω του Apps Script action=saveWakeHours) και θα
 // έπεφταν έξω από το κανονικό "allFeeds", κάνοντάς τες αόρατες στο findLatestField7Feed().
 let allFeedsRaw = [];
+// Cache της "βαθιάς" αναζήτησης field7 ανά κανάλι: { [channelId]: feedObject | null }.
+// Χρησιμοποιείται μόνο όταν δεν βρεθεί καμία εγγραφή με field7 μέσα στο κανονικό
+// παράθυρο (τελευταίες 500 μετρήσεις) — π.χ. αν έχει περάσει πολύς καιρός χωρίς αλλαγή
+// ωρών αφύπνισης και η ζυγαριά έχει κάνει πάνω από 500 μετρήσεις βάρους έκτοτε.
+let wakeHoursDeepFeedCache = {};
 window.allFeeds = allFeeds; // expose for Firebase module
 let tareWeight = null, tareDate = null;
 let alertShownForSession = false, alertBatShown = false;
@@ -1442,7 +1447,7 @@ function switchTab(tab) {
 
 // ── LOGOUT ──
 function doLogout() {
-  CHANNEL = ''; currentUser = ''; CHANNELS = []; allFeeds = []; allFeedsRaw = []; graphFeeds = []; activeChannelIndex = 0;
+  CHANNEL = ''; currentUser = ''; CHANNELS = []; allFeeds = []; allFeedsRaw = []; graphFeeds = []; activeChannelIndex = 0; wakeHoursDeepFeedCache = {};
   userRow = null; tareWeight = null; tareDate = null;
   alertShownForSession = false; alertBatShown = false; window._simAlertShown = false;
   _lastRenderedWeight = null;
@@ -2455,12 +2460,42 @@ function findLatestField7Feed() {
   // φιλτραρισμένο ώστε να κρατάει μόνο εγγραφές με έγκυρο field1 (βάρος) — και οι
   // εγγραφές ωρών αφύπνισης δεν έχουν field1, οπότε θα ήταν αόρατες εκεί.
   const source = (Array.isArray(allFeedsRaw) && allFeedsRaw.length) ? allFeedsRaw : allFeeds;
-  if (!Array.isArray(source)) return null;
-  for (let i = source.length - 1; i >= 0; i--) {
-    const f = source[i];
-    if (f && f.field7 !== null && f.field7 !== undefined && String(f.field7).trim() !== '') return f;
+  if (Array.isArray(source)) {
+    for (let i = source.length - 1; i >= 0; i--) {
+      const f = source[i];
+      if (f && f.field7 !== null && f.field7 !== undefined && String(f.field7).trim() !== '') return f;
+    }
   }
-  return null;
+  // Fallback: τίποτα μέσα στις τελευταίες 500 μετρήσεις (π.χ. πολύς καιρός χωρίς αλλαγή
+  // ωρών αφύπνισης) — αν έχουμε ήδη κάνει "βαθιά" αναζήτηση για αυτό το κανάλι, χρησιμοποίησέ την.
+  const cached = wakeHoursDeepFeedCache[CHANNEL];
+  return cached || null;
+}
+
+// Ψάχνει πιο "βαθιά" για το field7 όταν δεν βρέθηκε τίποτα στο κανονικό παράθυρο των
+// τελευταίων 500 μετρήσεων. Χρησιμοποιεί το ειδικό per-field endpoint του ThingSpeak
+// (επιστρέφει μόνο field7 + timestamp, όχι όλα τα fields — πολύ πιο ελαφρύ), με βάθος
+// έως 8000 εγγραφές (το ανώτατο όριο του ThingSpeak ανά request). Τρέχει ασύγχρονα και
+// ΔΕΝ μπλοκάρει το κύριο UI· αν βρει κάτι, ξαναζωγραφίζει το wake-hours UI.
+// Cache-άρεται ανά κανάλι ώστε να τρέχει ΜΙΑ φορά ανά session, όχι σε κάθε refresh.
+async function ensureWakeHoursDeepSearch() {
+  if (findLatestField7Feed()) return; // βρέθηκε ήδη κανονικά, δεν χρειάζεται τίποτα
+  if (Object.prototype.hasOwnProperty.call(wakeHoursDeepFeedCache, CHANNEL)) return; // ήδη ψάξαμε γι' αυτό το κανάλι
+  const ch = CHANNEL;
+  try {
+    const res = await fetch(`https://api.thingspeak.com/channels/${ch}/fields/7.json?results=8000`);
+    const data = await res.json();
+    const feeds = data.feeds || [];
+    let found = null;
+    for (let i = feeds.length - 1; i >= 0; i--) {
+      const f = feeds[i];
+      if (f && f.field7 !== null && f.field7 !== undefined && String(f.field7).trim() !== '') { found = f; break; }
+    }
+    wakeHoursDeepFeedCache[ch] = found; // cache-άρεται ακόμα κι αν είναι null, ώστε να μην ξαναψάξουμε συνέχεια
+    if (found && ch === CHANNEL) populateWakeHoursUI(); // ξαναζωγράφισε αν ο χρήστης είναι ακόμα σε αυτό το κανάλι
+  } catch (e) {
+    // Αν αποτύχει, μένουμε απλά στο "Δεν βρέθηκαν ακόμα" — δεν είναι κρίσιμο σφάλμα.
+  }
 }
 
 // Βρίσκει πότε θα ξυπνήσει η ζυγαριά ΕΠΟΜΕΝΗ ΦΟΡΑ, με βάση το ΤΡΕΧΟΝ (ήδη
@@ -2646,6 +2681,7 @@ function populateWakeHoursUI() {
   } else {
     curEl.textContent = '—';
     timeEl.textContent = 'Δεν βρέθηκαν ακόμα καταχωρημένες ώρες.';
+    ensureWakeHoursDeepSearch(); // ασύγχρονο, θα ξαναζωγραφίσει αν βρει κάτι πιο παλιό
   }
   updateWakeHoursPendingBadge();
 }

@@ -568,7 +568,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.15.0</div>
+    <div class="login-version">ver. 15.15.1</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -866,7 +866,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.15.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.15.1</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -1109,6 +1109,11 @@ function compareColorFor(k) { return COMPARE_COLORS[k % COMPARE_COLORS.length]; 
 let currentUser = '', userRow = null; // full row from sheet
 let myChart = null, graphCharts = {};
 let allFeeds = [], graphFeeds = [];
+// ΝΕΟ: ακατέργαστο (unfiltered) αντίγραφο των feeds, ΧΩΡΙΣ το φιλτράρισμα κατά field1.
+// Χρειάζεται γιατί οι εγγραφές ωρών αφύπνισης (field7) δεν έχουν έγκυρο field1
+// (γράφονται μόνο με field7 μέσω του Apps Script action=saveWakeHours) και θα
+// έπεφταν έξω από το κανονικό "allFeeds", κάνοντάς τες αόρατες στο findLatestField7Feed().
+let allFeedsRaw = [];
 window.allFeeds = allFeeds; // expose for Firebase module
 let tareWeight = null, tareDate = null;
 let alertShownForSession = false, alertBatShown = false;
@@ -1405,7 +1410,7 @@ function switchTab(tab) {
 
 // ── LOGOUT ──
 function doLogout() {
-  CHANNEL = ''; currentUser = ''; CHANNELS = []; allFeeds = []; graphFeeds = []; activeChannelIndex = 0;
+  CHANNEL = ''; currentUser = ''; CHANNELS = []; allFeeds = []; allFeedsRaw = []; graphFeeds = []; activeChannelIndex = 0;
   userRow = null; tareWeight = null; tareDate = null;
   alertShownForSession = false; alertBatShown = false; window._simAlertShown = false;
   _lastRenderedWeight = null;
@@ -1575,6 +1580,7 @@ async function loadData() {
     // Φόρτωσε 500 για γραφήματα
     const res = await fetch(`https://api.thingspeak.com/channels/${CHANNEL}/feeds.json?results=500`);
     const data = await res.json();
+    allFeedsRaw = data.feeds || []; // ΝΕΟ: unfiltered, για τις ώρες αφύπνισης (field7)
     const rawFeeds = data.feeds.filter(f => f.field1 && f.field1 !== '' && !isNaN(parseFloat(f.field1)));
     allFeeds = deduplicateFeeds(rawFeeds);
     window.allFeeds = allFeeds; // sync global for Firebase module
@@ -2413,9 +2419,13 @@ function parseWakeHoursString(raw) {
 }
 
 function findLatestField7Feed() {
-  if (!Array.isArray(allFeeds)) return null;
-  for (let i = allFeeds.length - 1; i >= 0; i--) {
-    const f = allFeeds[i];
+  // ΣΗΜΑΝΤΙΚΟ: ψάχνουμε στο allFeedsRaw (ΟΧΙ allFeeds), γιατί το allFeeds είναι
+  // φιλτραρισμένο ώστε να κρατάει μόνο εγγραφές με έγκυρο field1 (βάρος) — και οι
+  // εγγραφές ωρών αφύπνισης δεν έχουν field1, οπότε θα ήταν αόρατες εκεί.
+  const source = (Array.isArray(allFeedsRaw) && allFeedsRaw.length) ? allFeedsRaw : allFeeds;
+  if (!Array.isArray(source)) return null;
+  for (let i = source.length - 1; i >= 0; i--) {
+    const f = source[i];
     if (f && f.field7 !== null && f.field7 !== undefined && String(f.field7).trim() !== '') return f;
   }
   return null;

@@ -332,8 +332,10 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 .wakehours-pending { font-size: 12px; color: #8a5800; font-weight: 600; background: #fff3d6; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; display: none; line-height: 1.4; }
 .wakehours-pending.show { display: block; }
 .wakehour-input-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.wakehour-time-input { flex: 1; padding: 10px 12px; background: #fff; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; font-family: inherit; color: #222; outline: none; transition: border 0.2s; }
-.wakehour-time-input:focus { border-color: #4a9e4a; }
+.wakehour-time-select { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 10px 12px; background: #fff; border: 1px solid #ccc; border-radius: 8px; transition: border 0.2s; }
+.wakehour-time-select:focus-within { border-color: #4a9e4a; }
+.wakehour-hour-select, .wakehour-min-select { flex: 1; min-width: 0; border: none; background: transparent; font-size: 15px; font-family: inherit; color: #222; outline: none; padding: 2px; text-align: center; text-align-last: center; }
+.wakehour-sep { font-size: 15px; font-weight: 700; color: #666; }
 .wakehour-remove-btn { width: 36px; height: 36px; flex-shrink: 0; border: none; border-radius: 8px; background: #eee; color: #c0392b; font-size: 16px; font-weight: 700; cursor: pointer; }
 .wakehour-remove-btn:active { background: #ddd; }
 .btn-wakehour-add { width: 100%; padding: 10px; background: #eee; color: #333; border: 1.5px dashed #aaa; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -413,7 +415,7 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 /* ── Ομαλή μετάβαση χρωμάτων στο dark mode ── */
 html, body, .header, .weight-card, .sensors-card, .tare-card, .chart-card, .info-card, .info-section-title,
 .appearance-card, .bottom-nav, .nav-btn, .theme-toggle-top, .channel-switch-bar, .ch-pill, .ch-pill-btn,
-.notif-wrap, .wakehours-wrap, .wakehour-time-input, .report-wrap, .report-box, .graphs-header, .graph-block, .prev-panel, .prev-item, .notes-textarea, .range-input,
+.notif-wrap, .wakehours-wrap, .wakehour-time-select, .report-wrap, .report-box, .graphs-header, .graph-block, .prev-panel, .prev-item, .notes-textarea, .range-input,
 .range-mode-pill, .compare-ch-btn, .weight-value, .sensor-value, .diff-row, .last-time, .btn-logout,
 .badge, .refresh-top {
   transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
@@ -480,7 +482,9 @@ html.dark-mode .wakehours-current-label { color: #ccc; }
 html.dark-mode .wakehours-current-val { color: #f0f0f0; }
 html.dark-mode .wakehours-updated-time { color: #999; }
 html.dark-mode .wakehours-pending { background: #3a2e0c; color: #f0c060; }
-html.dark-mode .wakehour-time-input { background: #1a1a1a; border-color: #333; color: #eee; }
+html.dark-mode .wakehour-time-select { background: #1a1a1a; border-color: #333; }
+html.dark-mode .wakehour-hour-select, html.dark-mode .wakehour-min-select { color: #eee; }
+html.dark-mode .wakehour-hour-select option, html.dark-mode .wakehour-min-select option { background: #1a1a1a; color: #eee; }
 html.dark-mode .wakehour-remove-btn { background: #2a2a2a; }
 html.dark-mode .wakehour-remove-btn:active { background: #3a3a3a; }
 html.dark-mode .btn-wakehour-add { background: #2a2a2a; border-color: #555; color: #ddd; }
@@ -568,7 +572,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.16.0</div>
+    <div class="login-version">ver. 15.16.1</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -866,7 +870,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.16.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.16.1</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2452,19 +2456,58 @@ function addWakeHourInput(value) {
   if (!list) return;
   const row = document.createElement('div');
   row.className = 'wakehour-input-item';
-  const input = document.createElement('input');
-  input.type = 'time';
-  input.className = 'wakehour-time-input';
-  // lang="en-GB" -> αναγκάζει τον browser να δείξει 24ωρη μορφή (π.χ. "19:00")
-  // αντί για 12ωρη με π.μ./μ.μ. που εμφανίζεται όταν η συσκευή είναι σε ελληνικά.
-  input.setAttribute('lang', 'en-GB');
-  if (value) input.value = value;
+
+  // Δύο <select> (ώρα / λεπτό) αντί για <input type="time">: το native time picker
+  // δείχνει 12ωρη μορφή (π.μ./μ.μ.) ή 24ωρη ανάλογα με τις ρυθμίσεις γλώσσας/περιοχής
+  // ΤΗΣ ΣΥΣΚΕΥΗΣ (όχι της σελίδας) — το lang="en-GB" δεν αρκεί σε πολλά κινητά.
+  // Με δικά μας <select> ελέγχουμε 100% τη μορφή εμφάνισης (πάντα "19:00" στυλ).
+  const wrap = document.createElement('div');
+  wrap.className = 'wakehour-time-select';
+
+  const hourSel = document.createElement('select');
+  hourSel.className = 'wakehour-hour-select';
+  const hPlaceholder = document.createElement('option');
+  hPlaceholder.value = ''; hPlaceholder.textContent = '--';
+  hourSel.appendChild(hPlaceholder);
+  for (let h = 0; h < 24; h++) {
+    const opt = document.createElement('option');
+    opt.value = String(h).padStart(2, '0');
+    opt.textContent = String(h).padStart(2, '0');
+    hourSel.appendChild(opt);
+  }
+
+  const sep = document.createElement('span');
+  sep.className = 'wakehour-sep';
+  sep.textContent = ':';
+
+  const minSel = document.createElement('select');
+  minSel.className = 'wakehour-min-select';
+  const mPlaceholder = document.createElement('option');
+  mPlaceholder.value = ''; mPlaceholder.textContent = '--';
+  minSel.appendChild(mPlaceholder);
+  for (let m = 0; m < 60; m++) {
+    const opt = document.createElement('option');
+    opt.value = String(m).padStart(2, '0');
+    opt.textContent = String(m).padStart(2, '0');
+    minSel.appendChild(opt);
+  }
+
+  const m = value && String(value).match(/^(\d{1,2}):(\d{2})$/);
+  if (m) {
+    hourSel.value = String(Math.min(23, parseInt(m[1], 10))).padStart(2, '0');
+    minSel.value  = String(Math.min(59, parseInt(m[2], 10))).padStart(2, '0');
+  }
+
+  wrap.appendChild(hourSel);
+  wrap.appendChild(sep);
+  wrap.appendChild(minSel);
+
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'wakehour-remove-btn';
   btn.textContent = '✕';
   btn.onclick = () => removeWakeHourInput(btn);
-  row.appendChild(input);
+  row.appendChild(wrap);
   row.appendChild(btn);
   list.appendChild(row);
 }
@@ -2476,8 +2519,10 @@ function removeWakeHourInput(btn) {
   if (list.children.length > 1) {
     row.remove();
   } else {
-    const inp = row.querySelector('.wakehour-time-input');
-    if (inp) inp.value = '';
+    const h = row.querySelector('.wakehour-hour-select');
+    const mi = row.querySelector('.wakehour-min-select');
+    if (h) h.value = '';
+    if (mi) mi.value = '';
   }
 }
 
@@ -2490,8 +2535,14 @@ function renderWakeHourInputs(times) {
 }
 
 function collectWakeHourValues() {
-  return Array.from(document.querySelectorAll('#wakehours-input-list .wakehour-time-input'))
-    .map(i => i.value).filter(Boolean)
+  return Array.from(document.querySelectorAll('#wakehours-input-list .wakehour-input-item'))
+    .map(row => {
+      const h = row.querySelector('.wakehour-hour-select');
+      const mi = row.querySelector('.wakehour-min-select');
+      if (!h || !mi || h.value === '' || mi.value === '') return null;
+      return h.value + ':' + mi.value;
+    })
+    .filter(Boolean)
     .sort()
     .filter((v, i, arr) => arr.indexOf(v) === i); // unique
 }
@@ -2532,9 +2583,10 @@ function populateWakeHoursUI() {
     curEl.textContent = '—';
     timeEl.textContent = 'Δεν βρέθηκαν ακόμα καταχωρημένες ώρες.';
   }
-  // Μην ξαναγράψεις πάνω από ό,τι πληκτρολογεί ήδη ο χρήστης (π.χ. σε auto-refresh)
+  // Μην ξαναγράψεις πάνω από ό,τι επιλέγει ήδη ο χρήστης (π.χ. σε auto-refresh)
   if (document.activeElement && document.activeElement.classList &&
-      document.activeElement.classList.contains('wakehour-time-input')) {
+      (document.activeElement.classList.contains('wakehour-hour-select') ||
+       document.activeElement.classList.contains('wakehour-min-select'))) {
     updateWakeHoursPendingBadge();
     return;
   }
@@ -2570,18 +2622,18 @@ async function saveWakeHours() {
     const nextWake = getNextWakeTimeStr(currentTimes, now);
 
     const successMsg = nextWake
-      ? `✓ Καταχωρήθηκε — η ζυγαριά θα ξυπνήσει στις ${nextWake} και θα γίνει τότε η ενημέρωση`
-      : '✓ Καταχωρήθηκε το αίτημα';
-    msgEl.textContent = successMsg;
+      ? `Η ζυγαριά θα ξυπνήσει στις ${nextWake} και θα γίνει τότε η ενημέρωση των ωρών αφύπνισης.`
+      : 'Το αίτημα καταχωρήθηκε. Θα εφαρμοστεί μόλις ξυπνήσει η ζυγαριά.';
+    msgEl.textContent = '✓ Καταχωρήθηκε το αίτημα';
     msgEl.style.color = '#4a9e4a';
-    setTimeout(() => { if (msgEl.textContent === successMsg) msgEl.textContent = ''; }, 6000);
+    setTimeout(() => { if (msgEl.textContent === '✓ Καταχωρήθηκε το αίτημα') msgEl.textContent = ''; }, 4000);
     updateWakeHoursPendingBadge();
     hapticFeedback(15);
+    // Blocking modal (με κουμπί "Κατάλαβα") ώστε ο χρήστης να προλάβει σίγουρα να
+    // διαβάσει πότε θα εφαρμοστεί η αλλαγή, αντί για μήνυμα που σβήνει μόνο του.
+    showAlert('⏰ Ώρες Αφύπνισης', successMsg);
     if (window.showPushToast) {
-      const toastBody = nextWake
-        ? `Η ζυγαριά θα ξυπνήσει στις ${nextWake} και θα γίνει τότε η ενημέρωση των ωρών αφύπνισης.`
-        : 'Καταχωρήθηκαν επιτυχώς οι ώρες αφύπνισης. Όταν η ζυγαριά θα ξυπνήσει, θα ενημερωθούν οι νέες ώρες.';
-      window.showPushToast('⏰', 'Ώρες Αφύπνισης', toastBody);
+      window.showPushToast('⏰', 'Ώρες Αφύπνισης', successMsg);
     }
   } catch (e) {
     msgEl.textContent = '⚠️ Σφάλμα: ' + e.message;

@@ -590,7 +590,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.17.0</div>
+    <div class="login-version">ver. 15.17.1</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -888,7 +888,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.17.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.17.1</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2590,8 +2590,10 @@ function updateWakeHoursPendingBadge() {
     el.textContent = ''; el.classList.remove('show');
     return;
   }
-  el.textContent = '⏳ Εκκρεμεί ενημέρωση σε: ' + pending.value.split(',').join(', ') +
-    ' (αίτημα: ' + pending.time + ') — θα ενεργοποιηθεί όταν ξυπνήσει η ζυγαριά.';
+  el.textContent = pending.nextWake
+    ? `✓ Καταχωρήθηκε — η ζυγαριά θα ξυπνήσει στις ${pending.nextWake} και θα γίνει τότε η ενημέρωση`
+    : '⏳ Εκκρεμεί ενημέρωση σε: ' + pending.value.split(',').join(', ') +
+      ' (αίτημα: ' + pending.time + ') — θα ενεργοποιηθεί όταν ξυπνήσει η ζυγαριά.';
   el.classList.add('show');
 }
 
@@ -2650,13 +2652,16 @@ async function saveWakeHours() {
     const now = new Date();
     const timeStr = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear()
       + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-    localStorage.setItem(wakeHoursPendingKey(), JSON.stringify({ value, time: timeStr }));
 
     // Βρες πότε θα ξυπνήσει η ζυγαριά την επόμενη φορά (με βάση το ΤΡΕΧΟΝ πρόγραμμα,
     // όχι τις νέες ώρες), ώστε να ενημερώσουμε τον χρήστη πότε θα εφαρμοστεί η αλλαγή.
+    // Αποθηκεύεται μαζί με το pending αίτημα ώστε να ξαναδείχνεται (persistent badge)
+    // κάτω από "Τελευταία ενημέρωση" μέχρι να έρθει η επιβεβαίωση από τη ζυγαριά.
     const currentFeed = findLatestField7Feed();
     const currentTimes = currentFeed ? parseWakeHoursString(currentFeed.field7) : [];
     const nextWake = getNextWakeTimeStr(currentTimes, now);
+
+    localStorage.setItem(wakeHoursPendingKey(), JSON.stringify({ value, time: timeStr, nextWake }));
 
     const successMsg = nextWake
       ? `Η ζυγαριά θα ξυπνήσει στις ${nextWake} και θα γίνει τότε η ενημέρωση των ωρών αφύπνισης.`

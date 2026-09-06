@@ -568,7 +568,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.15.1</div>
+    <div class="login-version">ver. 15.16.0</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -866,7 +866,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.15.1</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.16.0</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2431,6 +2431,22 @@ function findLatestField7Feed() {
   return null;
 }
 
+// Βρίσκει πότε θα ξυπνήσει η ζυγαριά ΕΠΟΜΕΝΗ ΦΟΡΑ, με βάση το ΤΡΕΧΟΝ (ήδη
+// επιβεβαιωμένο, όχι το νέο αίτημα) πρόγραμμα ωρών· δηλαδή τη μικρότερη ώρα
+// >= τώρα, ή -αν όλες οι σημερινές έχουν περάσει- την πρώτη ώρα (θα είναι αύριο).
+// Χρησιμοποιείται για να πούμε στον χρήστη πότε ακριβώς θα εφαρμοστεί η αλλαγή
+// που μόλις αποθήκευσε, αφού η ζυγαριά διαβάζει το νέο αίτημα μόνο όταν ξυπνήσει.
+function getNextWakeTimeStr(times, now) {
+  if (!times || !times.length) return null;
+  const sorted = [...times].sort();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  for (const t of sorted) {
+    const [h, m] = t.split(':').map(Number);
+    if (h * 60 + m >= nowMinutes) return t;
+  }
+  return sorted[0]; // όλες πέρασαν σήμερα -> επόμενη είναι η πρώτη, αύριο
+}
+
 function addWakeHourInput(value) {
   const list = document.getElementById('wakehours-input-list');
   if (!list) return;
@@ -2439,6 +2455,9 @@ function addWakeHourInput(value) {
   const input = document.createElement('input');
   input.type = 'time';
   input.className = 'wakehour-time-input';
+  // lang="en-GB" -> αναγκάζει τον browser να δείξει 24ωρη μορφή (π.χ. "19:00")
+  // αντί για 12ωρη με π.μ./μ.μ. που εμφανίζεται όταν η συσκευή είναι σε ελληνικά.
+  input.setAttribute('lang', 'en-GB');
   if (value) input.value = value;
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -2543,14 +2562,26 @@ async function saveWakeHours() {
     const timeStr = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear()
       + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     localStorage.setItem(wakeHoursPendingKey(), JSON.stringify({ value, time: timeStr }));
-    msgEl.textContent = '✓ Καταχωρήθηκε το αίτημα';
+
+    // Βρες πότε θα ξυπνήσει η ζυγαριά την επόμενη φορά (με βάση το ΤΡΕΧΟΝ πρόγραμμα,
+    // όχι τις νέες ώρες), ώστε να ενημερώσουμε τον χρήστη πότε θα εφαρμοστεί η αλλαγή.
+    const currentFeed = findLatestField7Feed();
+    const currentTimes = currentFeed ? parseWakeHoursString(currentFeed.field7) : [];
+    const nextWake = getNextWakeTimeStr(currentTimes, now);
+
+    const successMsg = nextWake
+      ? `✓ Καταχωρήθηκε — η ζυγαριά θα ξυπνήσει στις ${nextWake} και θα γίνει τότε η ενημέρωση`
+      : '✓ Καταχωρήθηκε το αίτημα';
+    msgEl.textContent = successMsg;
     msgEl.style.color = '#4a9e4a';
-    setTimeout(() => { if (msgEl.textContent === '✓ Καταχωρήθηκε το αίτημα') msgEl.textContent = ''; }, 4000);
+    setTimeout(() => { if (msgEl.textContent === successMsg) msgEl.textContent = ''; }, 6000);
     updateWakeHoursPendingBadge();
     hapticFeedback(15);
     if (window.showPushToast) {
-      window.showPushToast('⏰', 'Ώρες Αφύπνισης',
-        'Καταχωρήθηκαν επιτυχώς οι ώρες αφύπνισης. Όταν η ζυγαριά θα ξυπνήσει, θα ενημερωθούν οι νέες ώρες.');
+      const toastBody = nextWake
+        ? `Η ζυγαριά θα ξυπνήσει στις ${nextWake} και θα γίνει τότε η ενημέρωση των ωρών αφύπνισης.`
+        : 'Καταχωρήθηκαν επιτυχώς οι ώρες αφύπνισης. Όταν η ζυγαριά θα ξυπνήσει, θα ενημερωθούν οι νέες ώρες.';
+      window.showPushToast('⏰', 'Ώρες Αφύπνισης', toastBody);
     }
   } catch (e) {
     msgEl.textContent = '⚠️ Σφάλμα: ' + e.message;

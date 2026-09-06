@@ -343,7 +343,25 @@ html.dark-mode .skel-chart-wrap { background: #1a1a1a; }
 .btn-wakehour-save { width: 100%; padding: 12px; background: #4a9e4a; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Segoe UI', Arial, sans-serif; }
 .btn-wakehour-save:active { background: #3a8a3a; }
 .btn-wakehour-save:disabled { background: #9bc99b; cursor: not-allowed; }
+.btn-wakehour-change { width: 100%; padding: 11px; background: #eee; color: #1a6dcc; border: 1.5px solid #cbd9ee; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 4px; font-family: 'Segoe UI', Arial, sans-serif; }
+.btn-wakehour-change:active { background: #ddd; }
 .wakehours-saved-msg { font-size: 12px; text-align: center; margin-top: 8px; min-height: 16px; font-weight: 600; }
+
+/* ── Modal επεξεργασίας ωρών αφύπνισης ── */
+.wakehours-editor-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1900; display: none; align-items: center; justify-content: center; padding: 24px; }
+.wakehours-editor-overlay.visible { display: flex; }
+.wakehours-editor-box { background: #fff; border-radius: 16px; padding: 20px; max-width: 380px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4); animation: alertPop 0.25s cubic-bezier(.34,1.56,.64,1); }
+.wakehours-editor-title { font-size: 17px; font-weight: 800; color: #222; margin-bottom: 14px; text-align: center; }
+.wakehours-editor-actions { display: flex; gap: 8px; margin-top: 4px; }
+.wakehours-editor-actions .btn-wakehour-cancel { flex: 1; padding: 12px; background: #eee; color: #333; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Segoe UI', Arial, sans-serif; }
+.wakehours-editor-actions .btn-wakehour-cancel:active { background: #ddd; }
+.wakehours-editor-actions .btn-wakehour-save { flex: 1.4; }
+html.dark-mode .wakehours-editor-box { background: #1a1a1a; }
+html.dark-mode .wakehours-editor-title { color: #f0f0f0; }
+html.dark-mode .btn-wakehour-change { background: #2a2a2a; border-color: #3a4a5a; color: #6fa8e8; }
+html.dark-mode .btn-wakehour-change:active { background: #333; }
+html.dark-mode .wakehours-editor-actions .btn-wakehour-cancel { background: #2a2a2a; color: #ddd; }
+html.dark-mode .wakehours-editor-actions .btn-wakehour-cancel:active { background: #333; }
 
 /* ── SIM STATUS BANNER ── */
 #sim-status-banner { display: none; margin: 10px 8px 0; border-radius: 10px; padding: 12px 16px; align-items: center; gap: 10px; }
@@ -572,7 +590,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.16.1</div>
+    <div class="login-version">ver. 15.17.0</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -870,7 +888,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.16.1</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.17.0</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -887,11 +905,21 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       </div>
       <div class="wakehours-updated-time" id="wakehours-updated-time">—</div>
       <div class="wakehours-pending" id="wakehours-pending"></div>
+      <button type="button" class="btn-wakehour-change" id="wakehours-change-btn" onclick="openWakeHoursEditor()">✏️ Αλλαγή</button>
+    </div>
 
-      <div id="wakehours-input-list"></div>
-      <button type="button" class="btn-wakehour-add" onclick="addWakeHourInput()">➕ Προσθήκη ώρας</button>
-      <button type="button" class="btn-wakehour-save" id="wakehours-save-btn" onclick="saveWakeHours()">💾 Αποθήκευση ωρών αφύπνισης</button>
-      <div class="wakehours-saved-msg" id="wakehours-saved-msg"></div>
+    <!-- ΝΕΟ: modal επεξεργασίας ωρών αφύπνισης (ανοίγει με το κουμπί "Αλλαγή") -->
+    <div id="wakehours-editor-overlay" class="wakehours-editor-overlay">
+      <div class="wakehours-editor-box">
+        <div class="wakehours-editor-title">Αλλαγή Ωρών Αφύπνισης</div>
+        <div id="wakehours-input-list"></div>
+        <button type="button" class="btn-wakehour-add" onclick="addWakeHourInput()">➕ Προσθήκη ώρας</button>
+        <div class="wakehours-editor-actions">
+          <button type="button" class="btn-wakehour-cancel" onclick="closeWakeHoursEditor()">Άκυρο</button>
+          <button type="button" class="btn-wakehour-save" id="wakehours-save-btn" onclick="saveWakeHours()">💾 Αποθήκευση</button>
+        </div>
+        <div class="wakehours-saved-msg" id="wakehours-saved-msg"></div>
+      </div>
     </div>
 
     <div class="info-section-title">Σημειώσεις</div>
@@ -1163,7 +1191,7 @@ function animateWeightUpdate(newWeight) {
 }
 
 // ── RIPPLE EFFECT (Material-style) σε βασικά κουμπιά της εφαρμογής ──
-const RIPPLE_SELECTOR = '.btn-login, .btn-channel, .btn-back-ch, .nav-btn, .ch-pill-btn, .btn-tare, .btn-logout, .theme-toggle-top, .btn-notif, .btn-clear, .compare-ch-btn, .range-mode-btn, .btn-confirm-yes, .btn-confirm-no, .refresh-top, .btn-notes-clear, .btn-wakehour-add, .btn-wakehour-save, .wakehour-remove-btn';
+const RIPPLE_SELECTOR = '.btn-login, .btn-channel, .btn-back-ch, .nav-btn, .ch-pill-btn, .btn-tare, .btn-logout, .theme-toggle-top, .btn-notif, .btn-clear, .compare-ch-btn, .range-mode-btn, .btn-confirm-yes, .btn-confirm-no, .refresh-top, .btn-notes-clear, .btn-wakehour-add, .btn-wakehour-save, .wakehour-remove-btn, .btn-wakehour-change, .btn-wakehour-cancel';
 document.addEventListener('click', function(e) {
   const btn = e.target.closest(RIPPLE_SELECTOR);
   if (!btn || btn.disabled) return;
@@ -2569,29 +2597,38 @@ function updateWakeHoursPendingBadge() {
 
 // Καλείται από populateInfoTab() (αλλαγή tab/καναλιού) ΚΑΙ από updateUI() (κάθε φρέσκο refresh),
 // ώστε η επιβεβαιωμένη τιμή/ώρα να ανανεώνεται αυτόματα μόλις η ζυγαριά ξυπνήσει και γράψει field7.
+// ΣΗΜΕΙΩΣΗ: δεν αγγίζει πλέον τη λίστα inputs (αυτή ζει μέσα στο modal επεξεργασίας και
+// γεμίζει μόνο όταν ανοίγει με openWakeHoursEditor()).
 function populateWakeHoursUI() {
   const curEl = document.getElementById('wakehours-current-val');
   const timeEl = document.getElementById('wakehours-updated-time');
   if (!curEl || !timeEl) return;
   const feed = findLatestField7Feed();
-  let times = [];
   if (feed) {
-    times = parseWakeHoursString(feed.field7);
+    const times = parseWakeHoursString(feed.field7);
     curEl.textContent = times.length ? times.join(', ') : String(feed.field7);
     timeEl.textContent = 'Τελευταία ενημέρωση: ' + fmtDate(feed.created_at);
   } else {
     curEl.textContent = '—';
     timeEl.textContent = 'Δεν βρέθηκαν ακόμα καταχωρημένες ώρες.';
   }
-  // Μην ξαναγράψεις πάνω από ό,τι επιλέγει ήδη ο χρήστης (π.χ. σε auto-refresh)
-  if (document.activeElement && document.activeElement.classList &&
-      (document.activeElement.classList.contains('wakehour-hour-select') ||
-       document.activeElement.classList.contains('wakehour-min-select'))) {
-    updateWakeHoursPendingBadge();
-    return;
-  }
-  renderWakeHourInputs(times);
   updateWakeHoursPendingBadge();
+}
+
+// Ανοίγει το modal επεξεργασίας: γεμίζει τη λίστα με τις ΤΡΕΧΟΥΣΕΣ (επιβεβαιωμένες) ώρες.
+function openWakeHoursEditor() {
+  const feed = findLatestField7Feed();
+  const times = feed ? parseWakeHoursString(feed.field7) : [];
+  renderWakeHourInputs(times);
+  const msgEl = document.getElementById('wakehours-saved-msg');
+  if (msgEl) msgEl.textContent = '';
+  const overlay = document.getElementById('wakehours-editor-overlay');
+  if (overlay) overlay.classList.add('visible');
+}
+
+function closeWakeHoursEditor() {
+  const overlay = document.getElementById('wakehours-editor-overlay');
+  if (overlay) overlay.classList.remove('visible');
 }
 
 async function saveWakeHours() {
@@ -2629,6 +2666,7 @@ async function saveWakeHours() {
     setTimeout(() => { if (msgEl.textContent === '✓ Καταχωρήθηκε το αίτημα') msgEl.textContent = ''; }, 4000);
     updateWakeHoursPendingBadge();
     hapticFeedback(15);
+    closeWakeHoursEditor();
     // Blocking modal (με κουμπί "Κατάλαβα") ώστε ο χρήστης να προλάβει σίγουρα να
     // διαβάσει πότε θα εφαρμοστεί η αλλαγή, αντί για μήνυμα που σβήνει μόνο του.
     showAlert('⏰ Ώρες Αφύπνισης', successMsg);

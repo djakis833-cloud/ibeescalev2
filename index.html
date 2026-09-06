@@ -590,7 +590,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.17.1</div>
+    <div class="login-version">ver. 15.17.2</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -888,7 +888,7 @@ html.dark-mode .expired-ok-badge { background: #1c3a1c; color: #6fe06f; }
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.17.1</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.17.2</span></div>
     </div>
 
     <!-- SIM STATUS BANNER -->
@@ -2468,15 +2468,30 @@ function findLatestField7Feed() {
 // >= τώρα, ή -αν όλες οι σημερινές έχουν περάσει- την πρώτη ώρα (θα είναι αύριο).
 // Χρησιμοποιείται για να πούμε στον χρήστη πότε ακριβώς θα εφαρμοστεί η αλλαγή
 // που μόλις αποθήκευσε, αφού η ζυγαριά διαβάζει το νέο αίτημα μόνο όταν ξυπνήσει.
-function getNextWakeTimeStr(times, now) {
+// Επιστρέφει Date object για την ΕΠΟΜΕΝΗ προγραμματισμένη αφύπνιση (με βάση το τρέχον
+// πρόγραμμα ωρών), δηλαδή τη μικρότερη ώρα >= τώρα, ή -αν όλες πέρασαν- την πρώτη ώρα
+// αύριο. Επιστρέφει πλήρες Date (όχι μόνο "HH:MM") ώστε να μπορεί να συγκριθεί αργότερα
+// με το πραγματικό created_at μιας νέας μέτρησης, για να ξέρουμε πότε όντως εφαρμόστηκε.
+function getNextWakeDateTime(times, now) {
   if (!times || !times.length) return null;
   const sorted = [...times].sort();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   for (const t of sorted) {
     const [h, m] = t.split(':').map(Number);
-    if (h * 60 + m >= nowMinutes) return t;
+    if (h * 60 + m >= nowMinutes) {
+      const d = new Date(now);
+      d.setHours(h, m, 0, 0);
+      return d;
+    }
   }
-  return sorted[0]; // όλες πέρασαν σήμερα -> επόμενη είναι η πρώτη, αύριο
+  const [h, m] = sorted[0].split(':').map(Number); // όλες πέρασαν σήμερα -> αύριο
+  const d = new Date(now);
+  d.setDate(d.getDate() + 1);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+function fmtHHMM(date) {
+  return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
 }
 
 function addWakeHourInput(value) {
@@ -2583,12 +2598,30 @@ function updateWakeHoursPendingBadge() {
   let pending = null;
   try { pending = JSON.parse(localStorage.getItem(wakeHoursPendingKey()) || 'null'); } catch (e) {}
   if (!pending || !pending.value) { el.textContent = ''; el.classList.remove('show'); return; }
-  const confirmedFeed = findLatestField7Feed();
-  const confirmedVal = confirmedFeed ? parseWakeHoursString(confirmedFeed.field7).join(',') : null;
-  if (confirmedVal === pending.value) {
-    localStorage.removeItem(wakeHoursPendingKey());
-    el.textContent = ''; el.classList.remove('show');
-    return;
+
+  // ΣΗΜΑΝΤΙΚΟ: ΔΕΝ ελέγχουμε πλέον αν το field7 "ταιριάζει" με το pending.value, γιατί
+  // αυτό το γράφουμε ΕΜΕΙΣ απευθείας στο ThingSpeak τη στιγμή του αιτήματος — θα ταίριαζε
+  // αμέσως, ακόμα και πριν ξυπνήσει η ζυγαριά (γι' αυτό έφευγε το μήνυμα πρόωρα σε refresh).
+  // Θεωρούμε το αίτημα εφαρμοσμένο μόνο όταν έρθει ΝΕΑ πραγματική μέτρηση (field1) με ώρα
+  // ίση ή μεταγενέστερη της προγραμματισμένης αφύπνισης (nextWakeAt) — δηλαδή αφού η
+  // ζυγαριά όντως ξύπνησε και επικοινώνησε ξανά μετά την ώρα-στόχο.
+  if (pending.nextWakeAt) {
+    const nextWakeMs = new Date(pending.nextWakeAt).getTime();
+    const latestReading = Array.isArray(allFeeds) && allFeeds.length ? allFeeds[allFeeds.length - 1] : null;
+    if (latestReading && new Date(latestReading.created_at).getTime() >= nextWakeMs) {
+      localStorage.removeItem(wakeHoursPendingKey());
+      el.textContent = ''; el.classList.remove('show');
+      return;
+    }
+  } else {
+    // Fallback για παλιό pending (αποθηκευμένο πριν από αυτή την αλλαγή, χωρίς nextWakeAt).
+    const confirmedFeed = findLatestField7Feed();
+    const confirmedVal = confirmedFeed ? parseWakeHoursString(confirmedFeed.field7).join(',') : null;
+    if (confirmedVal === pending.value) {
+      localStorage.removeItem(wakeHoursPendingKey());
+      el.textContent = ''; el.classList.remove('show');
+      return;
+    }
   }
   el.textContent = pending.nextWake
     ? `✓ Καταχωρήθηκε — η ζυγαριά θα ξυπνήσει στις ${pending.nextWake} και θα γίνει τότε η ενημέρωση`
@@ -2659,9 +2692,13 @@ async function saveWakeHours() {
     // κάτω από "Τελευταία ενημέρωση" μέχρι να έρθει η επιβεβαίωση από τη ζυγαριά.
     const currentFeed = findLatestField7Feed();
     const currentTimes = currentFeed ? parseWakeHoursString(currentFeed.field7) : [];
-    const nextWake = getNextWakeTimeStr(currentTimes, now);
+    const nextWakeDate = getNextWakeDateTime(currentTimes, now);
+    const nextWake = nextWakeDate ? fmtHHMM(nextWakeDate) : null;
 
-    localStorage.setItem(wakeHoursPendingKey(), JSON.stringify({ value, time: timeStr, nextWake }));
+    localStorage.setItem(wakeHoursPendingKey(), JSON.stringify({
+      value, time: timeStr, nextWake,
+      nextWakeAt: nextWakeDate ? nextWakeDate.toISOString() : null
+    }));
 
     const successMsg = nextWake
       ? `Η ζυγαριά θα ξυπνήσει στις ${nextWake} και θα γίνει τότε η ενημέρωση των ωρών αφύπνισης.`

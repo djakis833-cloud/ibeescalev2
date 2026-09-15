@@ -1,0 +1,23 @@
+name: Keepalive Workflow
+
+on:
+  schedule:
+    - cron: '0 0 */40 * *' # Εκτελείται κάθε 40 ημέρες
+  workflow_dispatch: # Για χειροκίνητη δοκιμή
+
+jobs:
+  cronjob-based-workflow:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Απαιτείται μόνο δικαίωμα εγγραφής στο αποθετήριο
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Keepalive Commit
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          date > keepalive.txt
+          git add keepalive.txt
+          git commit -m "chore: keepalive automated commit" || exit 0
+          git push

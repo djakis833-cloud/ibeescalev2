@@ -365,6 +365,10 @@ body.dark-mode .dark-mode-icon-btn { color:#fbbf24; border-color:#4b5563; backgr
 #sim-toast.toast-ok  { border-left: 5px solid #4a9e4a; }
 #sim-toast.toast-err { border-left: 5px solid #cc1a1a; }
 .sim-toast-icon { font-size: 32px; flex-shrink: 0; }
+#sim-toast.has-ok { flex-wrap: wrap; justify-content: center; pointer-events: auto; }
+#sim-toast.has-ok .sim-toast-msg { flex: 1 1 0; min-width: 0; }
+#sim-toast-ok { display: none; flex: 0 0 100%; margin-top: 4px; padding: 10px 0; border: 0; border-radius: 10px; background: #cc1a1a; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
+#sim-toast.has-ok #sim-toast-ok { display: block; }
 .sim-toast-msg { font-size: 14px; font-weight: 700; line-height: 1.4; }
 .sim-toast-msg.ok  { color: #1a7a1a; }
 .sim-toast-msg.err { color: #cc1a1a; }
@@ -548,7 +552,7 @@ body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.20.2</div>
+    <div class="login-version">ver. 15.20.3</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -621,6 +625,7 @@ body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
 <div id="sim-toast">
   <span class="sim-toast-icon" id="sim-toast-icon">📶</span>
   <span class="sim-toast-msg" id="sim-toast-msg"></span>
+  <button id="sim-toast-ok" type="button" onclick="dismissSimToast()">Εντάξει</button>
 </div>
 
 <!-- ── CONN INFO TOAST (floating comment when tapping a WiFi/GSM badge) ── -->
@@ -832,20 +837,20 @@ body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
 
   <!-- ══ TAB: INFO ══ -->
   <div id="tab-info" class="tab-page">
-    <div class="info-section-title">Πληροφορίες</div>
-    <div class="info-card">
-      <div class="info-row"><span class="info-row-label">name :</span><span class="info-row-val" id="info-name">—</span></div>
-      <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
-      <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
-      <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.20.2</span></div>
-    </div>
     <div class="info-section-title">Εμφάνιση</div>
     <div class="info-card dark-mode-row">
       <div><div style="font-weight:700">🌙 Dark mode</div><div style="font-size:12px;color:#888;margin-top:4px">Σκούρο θέμα για όλη την εφαρμογή</div></div>
       <button type="button" class="dark-mode-btn" id="dark-mode-toggle" onclick="toggleDarkMode()">Ενεργοποίηση</button>
     </div>
 
+    <div class="info-section-title">Πληροφορίες</div>
+    <div class="info-card">
+      <div class="info-row"><span class="info-row-label">name :</span><span class="info-row-val" id="info-name">—</span></div>
+      <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
+      <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
+      <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.20.3</span></div>
+    </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">
       <span class="sim-banner-icon" id="sim-banner-icon">📶</span>
@@ -1371,7 +1376,7 @@ function switchTab(tab) {
 function doLogout() {
   CHANNEL = ''; currentUser = ''; CHANNELS = []; allFeeds = []; allFeedsRaw = []; graphFeeds = []; activeChannelIndex = 0; wakeHoursDeepFeedCache = {};
   userRow = null; tareWeight = null; tareDate = null;
-  alertShownForSession = false; alertBatShown = false; window._simAlertShown = false;
+  alertShownForSession = false; alertBatShown = false; window._simAlertShown = false; window._simToastDismissed = false;
   _lastRenderedWeight = null;
   clearLoginWarnings();
   window.currentUser = ''; window.CHANNELS = [];
@@ -2048,20 +2053,26 @@ function showHumToast() {
 
 // ── SIM TOAST (floating 4 sec on Ζυγαριά tab) ──
 let _toastTimer = null;
-function showSimToast(icon, msg, cls) {
+function dismissSimToast() {
+  window._simToastDismissed = true;
+  if (_toastTimer) clearTimeout(_toastTimer);
+  document.getElementById('sim-toast').classList.remove('show');
+}
+function showSimToast(icon, msg, cls, needsOk) {
+  if (needsOk && window._simToastDismissed) return; // ήδη πατήθηκε «Εντάξει» σε αυτή τη συνεδρία
   const toast = document.getElementById('sim-toast');
   const toastIcon = document.getElementById('sim-toast-icon');
   const toastMsg  = document.getElementById('sim-toast-msg');
   if (_toastTimer) clearTimeout(_toastTimer);
-  toast.className = cls.split(' ')[0]; // toast-ok or toast-err
+  toast.className = cls.split(' ')[0] + (needsOk ? ' has-ok' : ''); // toast-ok or toast-err
   toastIcon.textContent = icon;
   toastMsg.textContent  = msg;
-  toastMsg.className    = 'sim-toast-msg ' + (cls.includes('ok') ? 'ok' : 'err');
+  toastMsg.className    = 'sim-toast-msg ' + (cls.includes('ok') ? 'ok' : 'err') + (needsOk ? ' blink-alert' : '');
   // force reflow so transition fires
   toast.offsetHeight;
   positionToastOver(toast, '.weight-card'); // πάνω, στο επίπεδο του Βάρους
   toast.classList.add('show');
-  _toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2000);
+  if (!needsOk) _toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2000); // με κουμπί μένει μέχρι το «Εντάξει»
 }
 
 // ── INFO TAB ──
@@ -2148,8 +2159,9 @@ async function populateInfoTab() {
       bannerText.textContent = 'Η SIM είναι ενεργοποιημένη!';
       toastIcon = '✅'; toastMsg = 'Η SIM είναι ενεργοποιημένη!'; toastCls = 'toast-ok ok';
     }
+    expEl.classList.toggle('blink-alert', daysLeft <= 3); // αναβοσβήνει όταν ≤3 μέρες ή έχει λήξει
     // Show floating toast on Ζυγαριά tab for 4 seconds
-    showSimToast(toastIcon, toastMsg, toastCls);
+    showSimToast(toastIcon, toastMsg, toastCls, daysLeft <= 3); // ≤3 μέρες (ή έληξε): κουμπί «Εντάξει»
   } else {
     expEl.textContent = '—'; expEl.className = 'info-row-val';
     banner.className = ''; banner.style.display = 'none';

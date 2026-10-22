@@ -23,6 +23,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Ζυγαριά Κυψέλης</title>
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Sans+Extra+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#1a3a1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -527,6 +530,190 @@ body.dark-mode .wakehours-editor-box{box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .dark-mode-btn{padding:10px 14px;border:1px solid #4a9e4a;border-radius:9px;background:#4a9e4a;color:#fff;font-weight:700;font-size:14px;cursor:pointer}
 body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
 
+
+/* ═══════════ ΝΕΟ DESIGN «Πεδίο» — field-instrument layer ═══════════
+   Μόνο εμφάνιση. Δεν αλλάζει markup/JS. Εξάγωνο (hex) κοπή γωνιών = κελί κυψέλης. */
+body{--bg:#E4EAE2;--panel:#F8F9F5;--panel2:#EBF0E8;--ink:#15271B;--mute:#52645A;--rule:#C3CFC1;--bar:#17301F;--honey:#E3A11A;--on-honey:#2A1A00;--green:#2E6B3A;--on-green:#fff;--red:#C0321E;--blue:#2A6DB0;--cut:14px;--num:'Fira Sans Extra Condensed','Fira Sans','Segoe UI',system-ui,sans-serif;--txt:'Fira Sans','Segoe UI',system-ui,sans-serif}
+body.dark-mode{--bg:#0E1812;--panel:#17251D;--panel2:#1F3026;--ink:#EEF3EA;--mute:#9DB0A2;--rule:#2B4033;--bar:#0A120D;--honey:#F2B63C;--green:#5DB06B;--on-green:#0B140E;--red:#FF7A63;--blue:#6FB0F0}
+html{background:var(--bg)}
+button,input,select,textarea{font-family:inherit}
+:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+
+body:not(.z){background:var(--bg);color:var(--ink);font-family:var(--txt);
+  .tab-page.active,.graph-block{animation:none}
+
+  /* panels: κελί με κομμένες γωνίες */
+  .weight-card,.sensors-card,.tare-card,.chart-card,.graph-block,.info-card,.notif-wrap,.wakehours-wrap,.report-wrap,.graphs-header,.graph-toggles,.graphs-compare-row,.skel-scale-wrap,.skel-sensors-wrap,.skel-chart-wrap{background:var(--panel);border:0;border-radius:0;box-shadow:none;color:var(--ink);
+    clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
+  .sensors-card,.skel-sensors-wrap,.graph-toggles,.graphs-compare-row{background:var(--panel2)}
+  .prev-panel{background:var(--panel2);border:0;border-radius:0}
+  .skeleton{background:var(--panel2);border-radius:2px}
+
+  /* κεφαλίδα */
+  .header{background:var(--bar);border:0;color:#fff}
+  .header-title{font-family:var(--num);font-size:24px;font-weight:700;letter-spacing:.2px}
+  .header-title span.blue{color:var(--honey)}
+  .header-title span.black{color:#fff}
+  .badge{background:var(--honey);color:var(--on-honey);border:0;border-radius:3px;font-family:var(--num);font-size:17px;font-weight:700}
+  .refresh-top,.btn-logout,.dark-mode-icon-btn{color:#DCE7DA;border-color:rgba(255,255,255,.3);background:none}
+  .channel-switch-bar{background:var(--bg);border-bottom:1px solid var(--rule)}
+  .ch-pill{background:var(--panel2);border-radius:5px;box-shadow:inset 0 0 0 1px var(--rule)}
+  .ch-pill-indicator{background:var(--honey);border-radius:5px}
+  .ch-pill-btn{color:var(--mute);border-radius:5px;font-weight:600}
+  .ch-pill-btn.active{color:var(--on-honey)}
+  .ch-switch-label{color:var(--mute)}
+
+  /* πλοήγηση: το ενεργό εικονίδιο μπαίνει σε εξάγωνο */
+  .bottom-nav{background:var(--panel);border-top:1px solid var(--rule)}
+  .nav-btn{color:var(--mute);font-weight:500;letter-spacing:0}
+  .nav-btn svg{width:40px;height:30px;padding:5px 10px;stroke-width:1.9}
+  .nav-btn.active{color:var(--ink);font-weight:700}
+  .nav-btn.active svg{color:var(--on-honey);background:var(--honey);clip-path:polygon(22% 4%,78% 4%,100% 50%,78% 96%,22% 96%,0 50%)}
+
+  /* ΜΕΤΡΗΣΗ: το ένα τολμηρό στοιχείο */
+  .weight-card{margin:10px 10px 0;padding:16px 16px 12px 22px;box-shadow:inset 6px 0 0 var(--honey)}
+  .weight-row{gap:14px}
+  .hive-icon{font-size:30px;width:70px;height:78px;display:flex;align-items:center;justify-content:center;background:var(--honey);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);animation:hexIn .55s cubic-bezier(.2,.8,.2,1) both}
+  .weight-value{font-family:var(--num);font-size:56px;font-weight:800;line-height:.95;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  #diff-prev{font-family:var(--num);flex-shrink:0}
+  .diff-pos{color:var(--green)}.diff-neg{color:var(--red)}
+  .diff-row,.diff-row b{font-family:var(--num);color:var(--ink)}
+  .diff-row-sub,.last-time{color:var(--mute)}
+  .last-time{font-weight:500}
+
+  .sensors-card{margin:10px 10px 0}
+  .sensor-value{font-family:var(--num);font-size:32px;font-weight:700;color:var(--ink)}
+  .toggle-row{border-top:1px dashed var(--rule);color:var(--ink);font-weight:500}
+  .toggle-slider,.gtoggle-slider{background:color-mix(in srgb,var(--mute) 50%,var(--panel))}
+  .gtoggle input:checked+.gtoggle-slider{background:var(--green)}
+  .prev-item,.prev-weight-box{background:var(--panel);border:0;border-left:3px solid var(--honey);border-radius:0}
+  .prev-item-label,.prev-item-time,.prev-title{color:var(--mute);text-transform:none;letter-spacing:0}
+  .prev-item-val{color:var(--ink);font-family:var(--num);font-size:17px}
+
+  .tare-card{margin:10px 10px 0}
+  .tare-diff{font-family:var(--num);font-size:30px;font-weight:700;color:var(--ink)}
+  .btn-tare{background:var(--ink);color:var(--panel);border-radius:4px}
+  .btn-tare:disabled{background:var(--rule);color:var(--mute)}
+  .btn-clear,.btn-notes-clear{background:none;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink);border-radius:4px}
+  .tare-ref{color:var(--mute)}
+
+  /* γραφήματα & λεπτομέρειες */
+  .chart-card,.graph-block{margin:10px 10px 0}
+  .chart-title,.graph-block-title{color:var(--mute);text-transform:none;letter-spacing:.2px;text-align:left;font-size:13px;font-weight:600}
+  .graphs-header,.graph-toggles,.graphs-compare-row{margin:10px 10px 0;padding:12px 14px}
+  .graphs-range-label,.range-label-sm,.gtoggle-label{color:var(--mute);text-transform:none;letter-spacing:0}
+  .range-mode-pill{background:var(--panel);border-radius:5px;box-shadow:inset 0 0 0 1px var(--rule)}
+  .range-mode-btn{color:var(--mute);border-radius:5px}
+  .range-mode-btn.active{background:var(--ink);color:var(--panel)}
+  .range-input{background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:4px}
+  .compare-ch-btn{border-radius:4px;background:var(--panel)}
+  .compare-ch-btn:not(.active){background:var(--panel)}
+  .info-section-title{background:none;border:0;color:var(--ink);font-family:var(--num);font-size:24px;font-weight:700;padding:20px 16px 8px}
+  .info-card,.notif-wrap,.wakehours-wrap,.report-wrap{margin:0 10px 4px}
+  .info-row{border-bottom:1px dashed var(--rule)}
+  .info-row-label{color:var(--mute);font-weight:500}
+  .info-row-val,.wakehours-current-val{color:var(--ink);font-weight:600}
+  .wakehours-current-label,.report-days-row span{color:var(--ink)}
+  .notif-desc,.report-intro,.wakehours-updated-time,.notif-info{color:var(--mute)}
+  .notes-textarea,.wakehour-time-select{background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:4px}
+  .wakehour-hour-select,.wakehour-min-select{color:var(--ink)}
+  .wakehour-remove-btn,.btn-wakehour-add,.btn-wakehour-change,.btn-confirm-no,.btn-wakehour-cancel{background:var(--panel2);color:var(--ink);border:1px solid var(--rule);border-radius:4px}
+
+  /* κύρια κουμπιά */
+  .btn-range-apply,.btn-notes-save,.btn-wakehour-save,.btn-report,.btn-notif,.dark-mode-btn{background:var(--green);color:var(--on-green);border:0;border-radius:5px;font-weight:600}
+  .btn-login{background:var(--honey);color:var(--on-honey);border-radius:5px}
+  .btn-login:active,.btn-notif:active,.btn-report:active,.btn-notes-save:active,.btn-wakehour-save:active,.btn-range-apply:active{filter:brightness(.9)}
+
+  /* εισαγωγή & επιλογή κυψέλης (πάνω στη φωτογραφία) */
+  .login-card,.channel-card{border:0;border-radius:0;clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);box-shadow:none}
+  .login-ibee,.login-title,.channel-title{font-family:var(--num);letter-spacing:.3px}
+  .login-ibee{font-size:42px}.login-title{font-size:32px}.channel-title{font-size:30px}
+  .login-field label,.channel-label{text-transform:none;letter-spacing:.2px;font-size:13px}
+  .login-field input{border-radius:4px}
+  .btn-channel{border-radius:5px;border-width:1.5px}
+  .btn-channel .ch-num{font-family:var(--num);font-size:34px;color:var(--honey)}
+
+  /* παράθυρα & ειδοποιήσεις */
+  #confirm-overlay,#alert-overlay,.wakehours-editor-overlay,#report-overlay{background:var(--bg)}
+  .alert-box,.confirm-box,.report-box,.wakehours-editor-box,#sim-toast,#conn-info-toast,#push-toast{background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:8px;box-shadow:none}
+  .alert-header{background:var(--red)}
+  .alert-msg,.confirm-msg,.wakehours-editor-title,.report-box-title,.report-stat-value,.conn-info-toast-msg,.push-toast-msg{color:var(--ink)}
+  .btn-alert-ok,.btn-confirm-yes{background:var(--red);color:#fff;border-radius:5px}
+}
+@keyframes hexIn{from{transform:scale(.6) rotate(-30deg);opacity:0}}
+
+/* ═══════════ MOTION: λίγες, συγκεκριμένες κινήσεις ═══════════ */
+@keyframes panelIn{from{opacity:0;transform:translateY(10px)}}
+@keyframes honeyRise{from{transform:scaleY(0)}}
+@keyframes hexPop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes hexBeat{40%{transform:scale(1.12) rotate(7deg)}}
+@keyframes cardRise{from{opacity:0;transform:translateY(18px)}}
+body:not(.z){
+  /* Ζυγαριά: τα πάνελ μπαίνουν στη σειρά, η μπάρα «γεμίζει» σαν στάθμη μελιού */
+  .weight-card{position:relative;box-shadow:none;animation:panelIn .45s cubic-bezier(.2,.8,.2,1) both}
+  .weight-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--honey);transform-origin:bottom;animation:honeyRise .9s .15s cubic-bezier(.3,.7,.2,1) both}
+  .sensors-card{animation:panelIn .45s .08s cubic-bezier(.2,.8,.2,1) both}
+  .tare-card{animation:panelIn .45s .16s cubic-bezier(.2,.8,.2,1) both}
+  .chart-card{animation:panelIn .45s .24s cubic-bezier(.2,.8,.2,1) both}
+  .graph-block{animation:panelIn .45s cubic-bezier(.2,.8,.2,1) both}
+  .graph-block:nth-child(2){animation-delay:.07s}.graph-block:nth-child(3){animation-delay:.14s}.graph-block:nth-child(4){animation-delay:.21s}.graph-block:nth-child(5){animation-delay:.28s}
+  /* νέα μέτρηση: το εξάγωνο χτυπά μαζί με τη λάμψη του βάρους */
+  .weight-row:has(.weight-pulse) .hive-icon{animation:hexIn .55s cubic-bezier(.2,.8,.2,1) both,hexBeat .7s ease-out}
+  /* αλλαγή καρτέλας: το ενεργό εξάγωνο «πετάγεται» */
+  .nav-btn.active svg{animation:hexPop .4s cubic-bezier(.3,1.6,.5,1)}
+  /* απάντηση στο άγγιγμα */
+  .btn-tare,.btn-clear,.btn-notes-save,.btn-range-apply,.btn-report,.nav-btn{transition:transform .12s}
+  .btn-tare:active,.btn-clear:active,.btn-notes-save:active,.btn-range-apply:active,.btn-report:active,.nav-btn:active{transform:scale(.96)}
+  /* σύνδεση & επιλογή κυψέλης */
+  .login-card,.channel-card{animation:cardRise .7s .1s cubic-bezier(.2,.8,.2,1) both}
+  .login-footer{animation:cardRise .7s .35s cubic-bezier(.2,.8,.2,1) both}
+}
+@media (prefers-reduced-motion:reduce){*,::before{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+
+/* ── Σύγκριση ζυγαριών: ξεκάθαρη επιλεγμένη κατάσταση ── */
+body:not(.z) .compare-ch-btn.active{background:color-mix(in srgb,var(--cmp-color,#4a7fc9) 26%,var(--panel));border:2px solid var(--cmp-color,#4a7fc9);color:var(--ink);font-weight:800;padding:5px 13px}
+body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
+
+/* ── ΚΑΙΡΟΣ ΠΕΡΙΟΧΗΣ (μέσα στην κάρτα αισθητήρων, πάνω από «Προηγούμενες μετρήσεις») ── */
+.wx{margin-top:12px;padding-top:10px;border-top:1px dashed var(--rule);-webkit-tap-highlight-color:transparent}
+.wx-head{display:flex;align-items:center;gap:8px}
+.wx-ico{font-size:20px;line-height:1}
+.wx-desc{font-size:14px;font-weight:600;color:var(--ink)}
+.wx-place{margin-left:auto;display:flex;align-items:center;gap:5px;max-width:58%;padding:3px 8px;background:none;color:var(--mute);border:1px solid var(--rule);border-radius:4px;font-size:12px;cursor:pointer}
+.wx-place:active{background:var(--panel)}
+.wx-place svg{flex-shrink:0;color:var(--green)}
+.wx-place-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--ink)}
+.wx-place-time{flex-shrink:0}
+.wx-row{cursor:pointer;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:8px;transition:opacity .3s}
+.wx[data-state=load] .wx-row{opacity:.45}
+.wx[data-state=ok] .wx-row{animation:panelIn .4s both}
+.wx-cell{padding:0 6px;text-align:center;border-left:1px solid var(--rule);min-width:0}
+.wx-cell:first-child{border-left:0;padding-left:0}
+.wx-cell b{display:flex;align-items:center;justify-content:center;gap:3px;font-family:var(--num);font-size:24px;font-weight:700;line-height:1.1;color:var(--ink);white-space:nowrap}
+.wx-cell b small{font-family:var(--txt);font-size:12px;font-weight:600;color:var(--mute)}
+.wx-cell i{display:block;margin-top:1px;font-style:normal;font-size:12px;color:var(--mute)}
+.wx-arrow{flex-shrink:0;color:var(--green);transition:transform .6s cubic-bezier(.3,.7,.2,1)}
+.wx-note{display:none;font-size:12.5px;line-height:1.45;color:var(--mute)}
+.wx-set{display:block;margin-top:8px;padding:9px 14px;background:var(--green);color:var(--on-green);border:0;border-radius:5px;font-size:13.5px;font-weight:600;cursor:pointer}
+.wx-overlay{position:fixed;inset:0;z-index:2060;display:none;align-items:flex-end;justify-content:center;background:rgba(8,20,12,.55)}
+.wx-overlay.visible{display:flex}
+.wx-sheet{width:100%;max-width:480px;max-height:88vh;overflow-y:auto;background:var(--panel);color:var(--ink);padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px));clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%,0 18px);animation:sheetUp .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}}
+.wx-sheet-head{display:flex;align-items:center;justify-content:space-between}
+.wx-sheet-title{font-family:var(--num);font-size:24px;font-weight:700}
+.wx-x{background:none;border:0;font-size:28px;line-height:1;color:var(--mute);cursor:pointer;padding:0 4px}
+.wx-sheet-sub{font-size:13px;color:var(--mute);margin:2px 0 14px}
+.wx-gps{width:100%;padding:13px;background:var(--green);color:var(--on-green);border:0;border-radius:5px;font-size:15px;font-weight:600;cursor:pointer}
+.wx-search{width:100%;margin-top:10px;padding:12px;background:var(--panel2);color:var(--ink);border:1px solid var(--rule);border-radius:4px;font-size:16px;outline:none}
+.wx-search:focus{border-color:var(--honey)}
+.wx-res{display:block;width:100%;text-align:left;padding:10px 4px;background:none;border:0;border-bottom:1px dashed var(--rule);color:var(--ink);cursor:pointer}
+.wx-res:active{background:var(--panel2)}
+.wx-res b{display:block;font-size:15px;font-weight:600}
+.wx-res span{font-size:12.5px;color:var(--mute)}
+.wx-sheet-msg{min-height:18px;margin-top:8px;font-size:12.5px;color:var(--mute)}
+.wx-reset{display:none;margin-top:6px;padding:8px 0;background:none;border:0;color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
+.wx[data-state=note] .wx-note{display:block}
+.wx[data-state=note] .wx-main{display:none}
 </style>
 </head>
 <body>
@@ -552,7 +739,7 @@ body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.20.3</div>
+    <div class="login-version">ver. 15.23.1</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -682,7 +869,7 @@ body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
       <div class="weight-row">
         <div class="hive-icon">⚖️</div>
         <div class="sensor-val-wrap" style="justify-content:center;gap:8px;">
-          <div class="weight-value" id="weight-main" style="font-size:34px;">—</div>
+          <div class="weight-value" id="weight-main">—</div>
           <span id="diff-prev" class="diff-pos" style="font-size:26px;font-weight:700;white-space:nowrap;"></span>
         </div>
       </div>
@@ -702,6 +889,17 @@ body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
       <div class="sensor-row-double" style="margin-top:10px;">
         <div class="sensor-half"><div class="sensor-icon">🔋</div><div class="sensor-val-wrap"><div class="sensor-value" id="bat">—</div><span class="trend-arrow" id="arrow-bat"></span></div></div>
         <div class="sensor-half"><div class="sensor-icon">📶</div><div class="sensor-val-wrap"><div class="sensor-value" id="sig">—</div><span class="trend-arrow" id="arrow-sig"></span></div></div>
+      </div>
+      <div class="wx" id="wx" data-state="load" >
+        <div class="wx-main">
+          <div class="wx-head"><span class="wx-ico" id="wx-ico">⛅</span><span class="wx-desc" id="wx-desc">—</span><button class="wx-place" id="wx-place" type="button" aria-label="Αλλαγή περιοχής καιρού"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.800 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg><span class="wx-place-name" id="wx-place-name">Περιοχή</span><span class="wx-place-time" id="wx-time"></span></button></div>
+          <div class="wx-row">
+            <div class="wx-cell"><b id="wx-temp">—</b><i>Θερμοκρασία</i></div>
+            <div class="wx-cell"><b id="wx-hum">—</b><i>Υγρασία</i></div>
+            <div class="wx-cell"><b><svg class="wx-arrow" id="wx-arrow" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 3v18M12 3l-6 6M12 3l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="wx-wind">—</span><small>km/h</small></b><i>Άνεμος <span id="wx-dir"></span></i></div>
+          </div>
+        </div>
+        <div class="wx-note" id="wx-note"><span id="wx-note-msg"></span><button class="wx-set" id="wx-note-btn" type="button"></button></div>
       </div>
       <div class="toggle-row">
         <span>Προηγούμενες μετρήσεις</span>
@@ -849,7 +1047,7 @@ body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.20.3</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.1</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">
@@ -1104,13 +1302,13 @@ function animateWeightUpdate(newWeight) {
     const t = Math.min(1, (now - startTime) / duration);
     const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
     const current = startVal + (newWeight - startVal) * eased;
-    el.textContent = current.toFixed(3) + ' kg';
+    el.textContent = current.toFixed(2) + ' kg';
     if (t < 1) {
       _weightAnimFrame = requestAnimationFrame(step);
     } else {
-      el.textContent = newWeight.toFixed(3) + ' kg';
+      el.textContent = newWeight.toFixed(2) + ' kg';
       _lastRenderedWeight = newWeight;
-      fitOneLine(el, 34, 20, 1);
+      fitOneLine(el, 60, 28, 1);
     }
   }
   _weightAnimFrame = requestAnimationFrame(step);
@@ -2830,6 +3028,194 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
+<script>
+/* ── ΚΑΙΡΟΣ ΠΕΡΙΟΧΗΣ: Open-Meteo (δωρεάν, χωρίς κλειδί).
+   Την περιοχή την ορίζει ο χρήστης (αναζήτηση ονόματος ή GPS) και θυμάται ανά κυψέλη στη συσκευή.
+   Αν δεν έχει οριστεί, χρησιμοποιείται η τοποθεσία του καναλιού ThingSpeak (όταν υπάρχει). ── */
+(function () {
+  const TTL = 10 * 60 * 1000, geo = {}, cache = {};
+  const DIRS = ['Β','ΒΑ','Α','ΝΑ','Ν','ΝΔ','Δ','ΒΔ'];
+  const $ = id => document.getElementById(id);
+  const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
+  const curCh = () => (typeof CHANNEL !== 'undefined' ? String(CHANNEL || '') : '');
+  const curUser = () => (typeof currentUser !== 'undefined' ? String(currentUser || '') : '');
+  const lsKey = id => 'wxloc_' + curUser() + '_' + id;
+  function getSaved(id) {
+    try { const v = JSON.parse(localStorage.getItem(lsKey(id)) || 'null'); return v && isFinite(v.lat) && isFinite(v.lon) ? v : null; } catch (e) { return null; }
+  }
+  function putSaved(id, v) {
+    try { if (v) localStorage.setItem(lsKey(id), JSON.stringify(v)); else localStorage.removeItem(lsKey(id)); } catch (e) {}
+  }
+
+  function wmo(c, day) {
+    if (c === 0) return [day ? '☀️' : '🌙', 'Αίθριος'];
+    if (c === 1) return [day ? '🌤️' : '🌙', 'Κυρίως αίθριος'];
+    if (c === 2) return ['⛅', 'Λίγα σύννεφα'];
+    if (c === 3) return ['☁️', 'Συννεφιά'];
+    if (c === 45 || c === 48) return ['🌫️', 'Ομίχλη'];
+    if (c >= 51 && c <= 57) return ['🌦️', 'Ψιλόβροχο'];
+    if (c >= 61 && c <= 67) return ['🌧️', 'Βροχή'];
+    if ((c >= 71 && c <= 77) || c === 85 || c === 86) return ['🌨️', 'Χιόνι'];
+    if (c >= 80 && c <= 82) return ['🌦️', 'Μπόρες'];
+    if (c >= 95) return ['⛈️', 'Καταιγίδα'];
+    return ['🌡️', '—'];
+  }
+
+  function fill(d) {
+    if (!d) {
+      ['wx-temp', 'wx-hum', 'wx-wind'].forEach(i => set(i, '—'));
+      set('wx-desc', '—'); set('wx-ico', '⛅'); set('wx-dir', ''); set('wx-time', ''); set('wx-place-name', 'Περιοχή');
+      return;
+    }
+    const w = wmo(d.weather_code, d.is_day === 1);
+    set('wx-ico', w[0]); set('wx-desc', w[1]);
+    set('wx-temp', Math.round(d.temperature_2m) + '°');
+    set('wx-hum', Math.round(d.relative_humidity_2m) + '%');
+    set('wx-wind', Math.round(d.wind_speed_10m));
+    set('wx-dir', DIRS[Math.round(d.wind_direction_10m / 45) % 8]);
+    set('wx-time', (d.time || '').slice(11, 16));
+    const ar = $('wx-arrow');
+    if (ar) ar.style.transform = 'rotate(' + (d.wind_direction_10m + 180) + 'deg)';
+  }
+
+  async function getGeo(id) {            // τοποθεσία καναλιού από ThingSpeak (εφεδρική)
+    if (id in geo) return geo[id];
+    const r = await fetch('https://api.thingspeak.com/channels/' + id + '.json');
+    const d = await r.json();
+    const lat = parseFloat(d.latitude), lon = parseFloat(d.longitude);
+    geo[id] = (isFinite(lat) && isFinite(lon) && (lat !== 0 || lon !== 0)) ? { lat, lon, name: 'Θέση ζυγαριάς' } : null;
+    return geo[id];
+  }
+
+  let noteFn = null;
+  function note(msg, btn, fn) {
+    set('wx-note-msg', msg); set('wx-note-btn', btn); noteFn = fn;
+    $('wx').dataset.state = 'note';
+  }
+
+  async function load() {
+    const box = $('wx'), id = curCh();
+    if (!box || !id) return;
+    if (box.dataset.ch !== id) { box.dataset.ch = id; box.dataset.state = 'load'; fill(null); }
+    const stale = () => box.dataset.ch !== curCh();
+    try {
+      const g = getSaved(id) || await getGeo(id);
+      if (stale()) return;
+      if (!g) { note('Ορίστε την περιοχή της ζυγαριάς για να δείτε τον καιρό.', 'Επιλογή περιοχής', openPicker); return; }
+      set('wx-place-name', g.name || 'Περιοχή');
+      const key = g.lat + ',' + g.lon;
+      let c = cache[key];
+      if (!c || Date.now() - c.t > TTL) {
+        const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + g.lat + '&longitude=' + g.lon +
+          '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,is_day' +
+          '&wind_speed_unit=kmh&timezone=auto';
+        const r = await fetch(u);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        c = cache[key] = { t: Date.now(), d: (await r.json()).current };
+      }
+      if (stale()) return;
+      fill(c.d); set('wx-place-name', g.name || 'Περιοχή');
+      box.dataset.state = 'ok';
+    } catch (e) {
+      if (stale()) return;
+      if (box.dataset.state !== 'ok') note('Ο καιρός δεν είναι διαθέσιμος αυτή τη στιγμή.', 'Επανάληψη', load);
+    }
+  }
+
+  function applyLocation() { const b = $('wx'); b.dataset.state = 'load'; fill(null); load(); }
+
+  // ── Παράθυρο επιλογής περιοχής ──
+  let built = false, tmr = 0, seq = 0;
+  function msg(t) { set('wx-msg', t); }
+  function close() { const o = $('wx-overlay'); if (o) o.classList.remove('visible'); }
+  function choose(loc) { putSaved(curCh(), loc); close(); applyLocation(); }
+
+  function build() {
+    if (built) return; built = true;
+    document.body.insertAdjacentHTML('beforeend',
+      '<div class="wx-overlay" id="wx-overlay" role="dialog" aria-modal="true" aria-labelledby="wx-ov-title"><div class="wx-sheet">' +
+      '<div class="wx-sheet-head"><div class="wx-sheet-title" id="wx-ov-title">Περιοχή καιρού</div><button class="wx-x" id="wx-close" type="button" aria-label="Κλείσιμο">×</button></div>' +
+      '<div class="wx-sheet-sub" id="wx-ov-sub"></div>' +
+      '<button class="wx-gps" id="wx-gps" type="button">📍 Χρήση της τοποθεσίας μου</button>' +
+      '<input class="wx-search" id="wx-q" type="search" placeholder="Ή αναζητήστε χωριό ή πόλη" autocomplete="off" enterkeyhint="search">' +
+      '<div id="wx-results"></div><div class="wx-sheet-msg" id="wx-msg"></div>' +
+      '<button class="wx-reset" id="wx-reset" type="button">Αφαίρεση περιοχής</button></div></div>');
+    const ov = $('wx-overlay'), q = $('wx-q');
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    $('wx-close').addEventListener('click', close);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    $('wx-reset').addEventListener('click', () => { putSaved(curCh(), null); close(); applyLocation(); });
+    $('wx-gps').addEventListener('click', () => {
+      if (!navigator.geolocation) { msg('Η συσκευή δεν υποστηρίζει εντοπισμό τοποθεσίας.'); return; }
+      msg('Εντοπισμός…');
+      navigator.geolocation.getCurrentPosition(
+        p => choose({ lat: +p.coords.latitude.toFixed(4), lon: +p.coords.longitude.toFixed(4), name: 'Η τοποθεσία μου' }),
+        err => {
+          const c = err && err.code;
+          if (!window.isSecureContext) msg('Ο εντοπισμός λειτουργεί μόνο σε ασφαλή σύνδεση (https). Αναζητήστε την περιοχή με το όνομά της.');
+          else if (c === 1) msg('Η τοποθεσία είναι αποκλεισμένη για την εφαρμογή. Ενεργοποιήστε την από τις ρυθμίσεις του browser (Ρυθμίσεις ιστότοπου → Τοποθεσία → Να επιτρέπεται) και δοκιμάστε ξανά, ή αναζητήστε την περιοχή με το όνομά της.');
+          else if (c === 3) msg('Ο εντοπισμός άργησε. Δοκιμάστε ξανά σε ανοιχτό χώρο ή αναζητήστε την περιοχή με το όνομά της.');
+          else msg('Δεν ήταν δυνατός ο εντοπισμός. Ελέγξτε ότι το GPS της συσκευής είναι ενεργό ή χρησιμοποιήστε την αναζήτηση.');
+        },
+        { timeout: 12000, maximumAge: 600000 });
+    });
+    q.addEventListener('input', () => {
+      clearTimeout(tmr);
+      const v = q.value.trim();
+      if (v.length < 2) { $('wx-results').textContent = ''; msg(''); return; }
+      tmr = setTimeout(() => search(v), 350);
+    });
+  }
+
+  async function search(v) {
+    const my = ++seq, res = $('wx-results');
+    msg('Αναζήτηση…');
+    try {
+      const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(v) + '&count=6&language=el&format=json');
+      const j = await r.json();
+      if (my !== seq) return;
+      res.textContent = '';
+      const list = j.results || [];
+      if (!list.length) { msg('Δεν βρέθηκε περιοχή. Δοκιμάστε άλλη γραφή ή το κοντινότερο χωριό.'); return; }
+      msg('');
+      list.forEach(x => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'wx-res';
+        const n = document.createElement('b'); n.textContent = x.name;
+        const sub = document.createElement('span');
+        sub.textContent = [x.admin2, x.admin1, x.country].filter((t, i, a) => t && a.indexOf(t) === i && t !== x.name).join(', ');
+        b.append(n, sub);
+        b.addEventListener('click', () => choose({ lat: +(+x.latitude).toFixed(4), lon: +(+x.longitude).toFixed(4), name: x.name }));
+        res.appendChild(b);
+      });
+    } catch (e) { if (my === seq) msg('Η αναζήτηση δεν είναι διαθέσιμη. Ελέγξτε τη σύνδεση.'); }
+  }
+
+  function openPicker() {
+    build();
+    const badge = $('hdr-badge');
+    set('wx-ov-sub', 'Ισχύει για την κυψέλη ' + (badge ? badge.textContent.trim() : ''));
+    $('wx-q').value = ''; $('wx-results').textContent = ''; msg('');
+    $('wx-reset').style.display = getSaved(curCh()) ? 'block' : 'none';
+    $('wx-overlay').classList.add('visible');
+  }
+
+  // Ανανέωση καιρού μαζί με κάθε ενημέρωση της οθόνης (χωρίς αλλαγή του υπάρχοντος κώδικα)
+  const orig = window.updateUI;
+  if (typeof orig === 'function') {
+    window.updateUI = function () {
+      const r = orig.apply(this, arguments);
+      try { load(); } catch (e) {}
+      return r;
+    };
+  }
+  const place = $('wx-place'), nb = $('wx-note-btn'), row = document.querySelector('#wx .wx-row');
+  if (place) place.addEventListener('click', openPicker);
+  if (nb) nb.addEventListener('click', () => { if (noteFn) noteFn(); });
+  if (row) row.addEventListener('click', () => { const g = getSaved(curCh()); if (g) delete cache[g.lat + ',' + g.lon]; load(); });
+  window.addEventListener('online', () => { try { load(); } catch (e) {} });
+})();
+</script>
 <script type="module">
 import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';

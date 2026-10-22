@@ -739,7 +739,7 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.23.1</div>
+    <div class="login-version">ver. 15.23.2</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -1047,7 +1047,7 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.1</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.2</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">
@@ -3160,34 +3160,95 @@ if ('serviceWorker' in navigator) {
         { timeout: 12000, maximumAge: 600000 });
     });
     q.addEventListener('input', () => {
-      clearTimeout(tmr);
+      clearTimeout(tmr); clearTimeout(tmr2);
       const v = q.value.trim();
-      if (v.length < 2) { $('wx-results').textContent = ''; msg(''); return; }
-      tmr = setTimeout(() => search(v), 350);
+      if (v.length < 2) { seq++; $('wx-results').textContent = ''; msg(''); return; }
+      tmr = setTimeout(() => search(v, false), 350);
+    });
+    q.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const v = q.value.trim();
+      if (v.length < 2) return;
+      clearTimeout(tmr); clearTimeout(tmr2);
+      search(v, true);
     });
   }
 
-  async function search(v) {
-    const my = ++seq, res = $('wx-results');
+  // ── Αναζήτηση: 1) Open-Meteo (άμεσα), 2) αν δεν βρεθεί, OpenStreetMap (χωριά, «χωριό + νομός») ──
+  let tmr2 = 0;
+  const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ς/g, 'σ');
+  const hit = (hay, w) => hay.includes(w.length > 4 ? w.slice(0, w.length - 2) : w);   // ανεκτικό σε πτώσεις (Θεσσαλονίκη/Θεσσαλονίκης)
+
+  async function omSearch(name) {
+    const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(name) + '&count=10&language=el&format=json');
+    return (await r.json()).results || [];
+  }
+  const omItem = x => ({
+    lat: +(+x.latitude).toFixed(4), lon: +(+x.longitude).toFixed(4), name: x.name,
+    sub: [x.admin3, x.admin2, x.admin1, x.country].filter((t, i, a) => t && a.indexOf(t) === i && t !== x.name).slice(0, 3).join(', ')
+  });
+  async function nmSearch(v) {
+    const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=8&accept-language=el&q=' + encodeURIComponent(v));
+    let a = await r.json();
+    const pl = a.filter(x => ['place', 'boundary'].includes(x.category || x.class));
+    if (pl.length) a = pl;
+    return a.map(x => ({
+      lat: +(+x.lat).toFixed(4), lon: +(+x.lon).toFixed(4),
+      name: x.name || (x.display_name || '').split(',')[0],
+      sub: (x.display_name || '').split(', ').slice(1).filter(t => !/^\d+$/.test(t)).slice(0, 3).join(', ')
+    }));
+  }
+
+  function render(items, osm) {
+    const res = $('wx-results');
+    res.textContent = '';
+    msg(osm ? 'Στοιχεία χάρτη © OpenStreetMap' : '');
+    items.forEach(x => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'wx-res';
+      const n = document.createElement('b'); n.textContent = x.name;
+      const sub = document.createElement('span'); sub.textContent = x.sub;
+      b.append(n, sub);
+      b.addEventListener('click', () => choose({ lat: x.lat, lon: x.lon, name: x.name }));
+      res.appendChild(b);
+    });
+  }
+
+  async function search(v, now) {
+    const my = ++seq;
     msg('Αναζήτηση…');
     try {
-      const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(v) + '&count=6&language=el&format=json');
-      const j = await r.json();
+      let items = (await omSearch(v)).map(omItem);
+      if (!items.length) {                       // π.χ. «Γέφυρα Θεσσαλονίκη»: ψάξε κάθε λέξη και κράτα όσα ταιριάζουν και με την περιοχή
+        const ws = v.split(/[\s,]+/).filter(w => w.length > 1);
+        if (ws.length > 1) {
+          const all = await Promise.all(ws.slice(0, 3).map(w => omSearch(w).catch(() => [])));
+          const seen = {}, pool = [];
+          all.flat().forEach(x => { if (!seen[x.id]) { seen[x.id] = 1; pool.push(x); } });
+          const nw = ws.map(norm), need = Math.min(2, nw.length);
+          items = pool.map(x => {
+            const hay = norm([x.name, x.admin1, x.admin2, x.admin3, x.admin4, x.country].join(' '));
+            return { x, s: nw.filter(w => hit(hay, w)).length };
+          }).filter(o => o.s >= need).sort((p, q2) => q2.s - p.s).slice(0, 6).map(o => omItem(o.x));
+        }
+      }
       if (my !== seq) return;
-      res.textContent = '';
-      const list = j.results || [];
-      if (!list.length) { msg('Δεν βρέθηκε περιοχή. Δοκιμάστε άλλη γραφή ή το κοντινότερο χωριό.'); return; }
-      msg('');
-      list.forEach(x => {
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'wx-res';
-        const n = document.createElement('b'); n.textContent = x.name;
-        const sub = document.createElement('span');
-        sub.textContent = [x.admin2, x.admin1, x.country].filter((t, i, a) => t && a.indexOf(t) === i && t !== x.name).join(', ');
-        b.append(n, sub);
-        b.addEventListener('click', () => choose({ lat: +(+x.latitude).toFixed(4), lon: +(+x.longitude).toFixed(4), name: x.name }));
-        res.appendChild(b);
-      });
+      if (items.length) { render(items, false); return; }
+      $('wx-results').textContent = '';
+      if (now) await deep(v, my);
+      else { msg('Δεν βρέθηκε. Γίνεται ευρύτερη αναζήτηση…'); tmr2 = setTimeout(() => deep(v, my), 650); }
+    } catch (e) { if (my === seq) msg('Η αναζήτηση δεν είναι διαθέσιμη. Ελέγξτε τη σύνδεση.'); }
+  }
+
+  async function deep(v, my) {
+    if (my !== seq) return;
+    msg('Ευρύτερη αναζήτηση…');
+    try {
+      const items = await nmSearch(v);
+      if (my !== seq) return;
+      if (items.length) render(items, true);
+      else { $('wx-results').textContent = ''; msg('Δεν βρέθηκε περιοχή. Δοκιμάστε μόνο το όνομα του χωριού ή της κοντινής πόλης.'); }
     } catch (e) { if (my === seq) msg('Η αναζήτηση δεν είναι διαθέσιμη. Ελέγξτε τη σύνδεση.'); }
   }
 

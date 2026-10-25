@@ -739,7 +739,7 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.23.2</div>
+    <div class="login-version">ver. 15.23.4</div>
     <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
   </div>
 </div>
@@ -1047,7 +1047,7 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.2</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.4</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">
@@ -1616,21 +1616,40 @@ document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key
   if (u && p) { document.getElementById('inp-user').value = u; document.getElementById('inp-pass').value = p; document.getElementById('chk-remember').checked = true; }
 })();
 
+// ── ΩΡΑ ΣΥΣΚΕΥΗΣ (σταθερή UTC+3) ──
+// Ο χρονοδιακόπτης (CN101A) που τροφοδοτεί τον ESP32 μένει ΜΟΝΙΜΑ στη θερινή ώρα (UTC+3)
+// και δεν αλλάζει σε χειμερινή. Όλες οι ώρες που εμφανίζονται στην εφαρμογή (μετρήσεις,
+// γραφήματα, αναφορές) είναι σε ώρα συσκευής (UTC+3) ΟΛΟ τον χρόνο. ΕΞΑΙΡΕΣΗ: οι «ώρες
+// αφύπνισης» (field7) μένουν σε ώρα Ελλάδας που αλλάζει, γιατί έτσι τις διαβάζει ο ESP32,
+// ανεξάρτητα από την τοπική ώρα του κινητού/browser (που τον χειμώνα είναι UTC+2).
+// Έτσι η βραδινή μέτρηση φαίνεται πάντα 21:00 και όχι 20:00 μετά την αλλαγή ώρας.
+const DEVICE_UTC_OFFSET_MIN = 180;
+const DEVICE_SHIFT_MS = DEVICE_UTC_OFFSET_MIN * 60000;
+// Επιστρέφει Date μετατοπισμένο ώστε τα getUTC*() να δίνουν την ώρα συσκευής.
+function devDate(v) {
+  const t = (v instanceof Date) ? v.getTime() : (typeof v === 'number' ? v : new Date(v).getTime());
+  return new Date(t + DEVICE_SHIFT_MS);
+}
+// Ώρα συσκευής (έτος, μήνας 0-11, ημέρα, ώρα, λεπτό, δευτ.) -> πραγματική χρονική στιγμή σε ms.
+function devToUtcMs(y, mo0, d, h, mi, s) { return Date.UTC(y, mo0, d, h || 0, mi || 0, s || 0) - DEVICE_SHIFT_MS; }
+function deviceHour(v) { return devDate(v).getUTCHours(); }
+function pad2(n) { return String(n).padStart(2, '0'); }
+
 // ── HELPERS ──
 function fmtDate(iso) {
-  const d = new Date(iso);
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear()
-    + ' - ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  const d = devDate(iso);
+  return pad2(d.getUTCDate()) + '/' + pad2(d.getUTCMonth()+1) + '/' + d.getUTCFullYear()
+    + ' - ' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
 }
 function fmtDateShort(iso) {
-  const d = new Date(iso);
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0')
-    + '\n' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  const d = devDate(iso);
+  return pad2(d.getUTCDate()) + '/' + pad2(d.getUTCMonth()+1)
+    + '\n' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
 }
 function fmtTimeOnly(iso) {
-  const d = new Date(iso);
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0')
-    + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  const d = devDate(iso);
+  return pad2(d.getUTCDate()) + '/' + pad2(d.getUTCMonth()+1)
+    + ' ' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
 }
 // Μορφοποιεί τα γραμμάρια με τελεία χιλιάδων (π.χ. -30540 -> -30.540 gr)
 function fmtSignedGrams(grams) {
@@ -1692,17 +1711,25 @@ function doRefresh() {
 // Οι ώρες αποστολής: 03:00-03:05, 09:00-09:05, 10:00-10:05, 11:00-11:05,
 //                    12:00-12:05, 15:00-15:05, 18:00-18:05, 21:00-21:05
 const SCHEDULE_HOURS = [3, 9, 10, 11, 12, 15, 18, 21];
+
+// Οι ώρες SCHEDULE_HOURS αναφέρονται πάντα σε ώρα συσκευής (UTC+3, βλ. DEVICE_UTC_OFFSET_MIN),
+// ανεξάρτητα από την τοπική ώρα του browser. Χωρίς αυτό, μετά την αλλαγή ώρας η μέτρηση των
+// 21:00 (θερινή) ερχόταν 20:00 τοπική και δεν ταίριαζε σε κανένα παράθυρο, οπότε περνούσαν
+// και οι 3 μετρήσεις (20:00, 20:01, 20:02).
+
 function deduplicateFeeds(feeds) {
   const seen = new Set();
   return feeds.filter(f => {
-    const d = new Date(f.created_at);
-    const h = d.getHours();
-    const m = d.getMinutes();
-    // Έλεγξε αν η μέτρηση ανήκει σε κάποιο από τα προγραμματισμένα παράθυρα (hh:00 - hh:04)
-    if (SCHEDULE_HOURS.includes(h) && m >= 0 && m <= 4) {
-      // Κλειδί: χρήστης + κανάλι + ημέρα + ώρα (αγνοούμε τα λεπτά/δευτερόλεπτα)
-      const dayStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
-      const key = `${dayStr}_${h}`;
+    const ts = new Date(f.created_at).getTime();
+    const d = new Date(ts);
+    const m = d.getMinutes(); // τα λεπτά ταυτίζονται σε όλες τις ζώνες με ακέραιο offset ωρών
+    // Προγραμματισμένη μέτρηση αν πέφτει στο παράθυρο hh:00 - hh:04 είτε με την ώρα της
+    // συσκευής (UTC+3, σταθερή) είτε με την τοπική ώρα (για παλιότερες μετρήσεις που τυχόν
+    // στάλθηκαν όταν ο χρονοδιακόπτης ακολουθούσε την τοπική ώρα).
+    const inSchedule = SCHEDULE_HOURS.includes(deviceHour(ts)) || SCHEDULE_HOURS.includes(d.getHours());
+    if (inSchedule && m >= 0 && m <= 4) {
+      // Κλειδί: ολόκληρη ώρα (UTC) — ίδιο για όλες τις μετρήσεις του ίδιου παραθύρου
+      const key = Math.floor(ts / 3600000);
       if (seen.has(key)) return false; // διπλή — απόρριψη
       seen.add(key);
     }
@@ -1826,8 +1853,9 @@ function updateUI() {
   // Σημείωση: το μέγεθος γραμματοσειράς του weight-main ρυθμίζεται πλέον
   // εσωτερικά από την animateWeightUpdate() όταν ολοκληρωθεί το count-up.
 
-  const yesterday21 = new Date(latest.created_at);
-  yesterday21.setDate(yesterday21.getDate() - 1); yesterday21.setHours(21,0,0,0);
+  // Χθεσινή βραδινή μέτρηση = 21:00 ώρα συσκευής (UTC+3 σταθερά, βλ. DEVICE_UTC_OFFSET_MIN)
+  const devLatest = devDate(latest.created_at); // διαβάζεται με getUTC*
+  const yesterday21 = new Date(devToUtcMs(devLatest.getUTCFullYear(), devLatest.getUTCMonth(), devLatest.getUTCDate() - 1, 21, 0, 0));
   let dayFeed = null, bestD = Infinity;
   for (const f of allFeeds) {
     const d = Math.abs(new Date(f.created_at).getTime() - yesterday21.getTime());
@@ -1839,8 +1867,8 @@ function updateUI() {
   fitOneLine(elDay, 22, 14, 1);
 
   // Διαφορά σε σχέση με την ίδια ώρα χθες (π.χ. σήμερα 12:00 vs χθες 12:00)
-  const sameTimeYesterday = new Date(latest.created_at);
-  sameTimeYesterday.setDate(sameTimeYesterday.getDate() - 1);
+  // Η ώρα συσκευής είναι σταθερή (χωρίς αλλαγή ώρας), άρα "ίδια ώρα χθες" = ακριβώς 24 ώρες πριν.
+  const sameTimeYesterday = new Date(new Date(latest.created_at).getTime() - 86400000);
   let sameTimeFeed = null, bestDSame = Infinity;
   for (const f of allFeeds) {
     const d = Math.abs(new Date(f.created_at).getTime() - sameTimeYesterday.getTime());
@@ -1864,7 +1892,7 @@ function updateUI() {
   const elSameTimeRow = document.getElementById('diff-sametime-row');
   if (elSameTimeRow) {
     const latestDate = new Date(latest.created_at);
-    const lh = latestDate.getHours();
+    const lh = deviceHour(latestDate.getTime()); // ώρα συσκευής (UTC+3), όχι τοπική
     const lm = latestDate.getMinutes();
     const isEveningReading = (lh === 21) || (lh === 20 && lm >= 50);
     elSameTimeRow.style.display = isEveningReading ? 'none' : '';
@@ -1998,8 +2026,9 @@ function getFilteredFeeds(sourceFeeds) {
     const from = document.getElementById('inp-date-from').value;
     const to   = document.getElementById('inp-date-to').value;
     if (!from && !to) return src.slice(-50);
-    const fromTs = from ? new Date(from).getTime() : 0;
-    const toTs   = to   ? new Date(to + 'T23:59:59').getTime() : Infinity;
+    // Οι ημερομηνίες "από/έως" ερμηνεύονται σε ώρα συσκευής (όπως τα δεδομένα στην οθόνη)
+    const fromTs = from ? devToUtcMs(...from.split('-').map((x, i) => i === 1 ? parseInt(x, 10) - 1 : parseInt(x, 10)), 0, 0, 0) : 0;
+    const toTs   = to   ? devToUtcMs(...to.split('-').map((x, i) => i === 1 ? parseInt(x, 10) - 1 : parseInt(x, 10)), 23, 59, 59) : Infinity;
     return src.filter(f => { const t = new Date(f.created_at).getTime(); return t >= fromTs && t <= toTs; });
   }
 }
@@ -2421,8 +2450,8 @@ function generateReport() {
   // ── Υψηλότερη / Χαμηλότερη διαφορά βάρους ημέρας (σύγκριση τελευταίας μέτρησης κάθε ημέρας με την προηγούμενη) ──
   const dayMap = new Map();
   periodFeeds.forEach(f => {
-    const d = new Date(f.created_at);
-    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const d = devDate(f.created_at);
+    const key = d.getUTCFullYear() + '-' + pad2(d.getUTCMonth()+1) + '-' + pad2(d.getUTCDate());
     const existing = dayMap.get(key);
     if (!existing || new Date(f.created_at) > new Date(existing.created_at)) dayMap.set(key, f);
   });
@@ -2654,6 +2683,9 @@ async function ensureWakeHoursDeepSearch() {
 function getNextWakeDateTime(times, now) {
   if (!times || !times.length) return null;
   const sorted = [...times].sort();
+  // ΣΗΜΑΝΤΙΚΟ: οι ώρες αφύπνισης ερμηνεύονται από τον ESP32 με την ώρα Ελλάδας (αλλάζει
+  // θερινή/χειμερινή), ΟΧΙ με την ώρα συσκευής/χρονοδιακόπτη (UTC+3). Γι' αυτό εδώ
+  // χρησιμοποιείται σκόπιμα η τοπική ώρα του κινητού (getHours/setHours).
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   for (const t of sorted) {
     const [h, m] = t.split(':').map(Number);
@@ -2670,7 +2702,8 @@ function getNextWakeDateTime(times, now) {
   return d;
 }
 function fmtHHMM(date) {
-  return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+  // Τοπική ώρα Ελλάδας (όπως οι ώρες αφύπνισης), όχι ώρα συσκευής.
+  return pad2(date.getHours()) + ':' + pad2(date.getMinutes());
 }
 
 function addWakeHourInput(value) {
@@ -2972,7 +3005,7 @@ function parseSheetTareValue(str) {
     const day = parseInt(m[2], 10), month = parseInt(m[3], 10), year = parseInt(m[4], 10);
     const hour = parseInt(m[5], 10), minute = parseInt(m[6], 10);
     if (!isNaN(weight)) {
-      const dateObj = new Date(year, month - 1, day, hour, minute, 0);
+      const dateObj = new Date(devToUtcMs(year, month - 1, day, hour, minute, 0)); // ώρα συσκευής
       if (!isNaN(dateObj.getTime())) return { weight, dateISO: dateObj.toISOString() };
     }
   }

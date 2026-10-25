@@ -25,7 +25,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Sans+Extra+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Sans+Extra+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#1a3a1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -714,6 +714,36 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
 .wx-reset{display:none;margin-top:6px;padding:8px 0;background:none;border:0;color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
 .wx[data-state=note] .wx-note{display:block}
 .wx[data-state=note] .wx-main{display:none}
+
+/* ══ Γραφήματα: chips επιλογής σειρών (αντί για διακόπτες) ══
+   Κρυφό checkbox + chip. Ενεργό = χρώμα της σειράς, ανενεργό = λευκό. */
+body:not(.z) .graph-toggles.gchips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;
+  background:transparent;border:0;border-radius:0;box-shadow:none;clip-path:none;padding:0 0 2px;margin:10px 10px 0}
+.gchip{position:relative;display:flex;min-width:0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.gchip input{position:absolute;opacity:0;width:0;height:0;margin:0;pointer-events:none}
+.gchip-body{box-sizing:border-box;width:100%;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;height:28px;padding:0 5px;border-radius:999px;
+  background:#fff;border:1.5px solid rgba(60,90,120,.14);color:#5c6b82;font-weight:700;font-size:11.5px;line-height:1;white-space:nowrap;
+  box-shadow:0 1px 2px rgba(20,40,70,.05);transition:background .2s,color .2s,border-color .2s,box-shadow .2s,transform .12s}
+.gchip:active .gchip-body{transform:scale(.96)}
+.gchip input:focus-visible + .gchip-body{outline:2px solid var(--honey,#E3A11A);outline-offset:2px}
+.gchip-emoji{flex:none;font-size:13px;line-height:1}
+.gchip-text{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.gchip input:checked + .gchip-body{background:var(--gc);border-color:var(--gc);color:#fff;
+  box-shadow:0 4px 10px color-mix(in srgb,var(--gc) 38%,transparent)}
+.gchip-weight{--gc:#F2A13A}.gchip-temp{--gc:#E93A5B}.gchip-hum{--gc:#4AA3F0}
+.gchip-bat{--gc:#3F9A62}.gchip-sig{--gc:#6460F5}.gchip-conn{--gc:#52B8A4}
+.gchip-weight input:checked + .gchip-body{color:#14110a}
+body.dark-mode .gchip input:not(:checked) + .gchip-body{background:var(--panel2,#1F3026);border-color:var(--rule,#2B4033);color:var(--mute,#9DB0A2);box-shadow:none}
+@media (min-width:390px){.gchip-body{font-size:12.5px;gap:4px}.gchip-emoji{font-size:14px}}
+@media (max-width:339px){body:not(.z) .graph-toggles.gchips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ══ Login: κάρτα + υποσέλιδο όπως στο screenshot ══ */
+body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);border-radius:16px;clip-path:none;box-shadow:0 8px 32px rgba(0,0,0,.35)}
+#login-screen .login-footer{margin-top:22px}
+#login-screen .login-version{font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12.5px;font-weight:500;letter-spacing:.09em;color:#6b7a90;margin-bottom:12px}
+#login-screen .login-support{display:flex;align-items:center;justify-content:center;gap:7px;font-size:15px;font-weight:500;color:#e8eee8}
+#login-screen .login-support svg{width:17px;height:17px;flex:none;fill:none;stroke:#5ed48c;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#login-screen .login-support a{color:#5ed48c;font-weight:700;letter-spacing:.2px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -739,8 +769,8 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.23.4</div>
-    <div class="login-contact">Επικοινωνία : <a href="tel:+306970065700">+306970065700</a></div>
+    <div class="login-version">ver. 15.23.6</div>
+    <div class="login-contact login-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
 
@@ -993,31 +1023,13 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
         <button class="btn-range-apply" onclick="applyGraphRange()">Εφαρμογή</button>
       </div>
     </div>
-    <div class="graph-toggles">
-      <div class="gtoggle-item">
-        <label class="gtoggle"><input type="checkbox" id="gt-weight" checked onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
-        <span class="gtoggle-label"><span class="gt-icon">⚖️</span> Βάρος</span>
-      </div>
-      <div class="gtoggle-item">
-        <label class="gtoggle"><input type="checkbox" id="gt-temp" checked onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
-        <span class="gtoggle-label"><span class="gt-icon">🌡️</span> Θερμ.</span>
-      </div>
-      <div class="gtoggle-item">
-        <label class="gtoggle"><input type="checkbox" id="gt-sig" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
-        <span class="gtoggle-label"><span class="gt-icon">📶</span> Σήμα</span>
-      </div>
-      <div class="gtoggle-item">
-        <label class="gtoggle"><input type="checkbox" id="gt-hum" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
-        <span class="gtoggle-label"><span class="gt-icon">💧</span> Υγρασία</span>
-      </div>
-      <div class="gtoggle-item">
-        <label class="gtoggle"><input type="checkbox" id="gt-bat" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
-        <span class="gtoggle-label"><span class="gt-icon">🔋</span> Μπατ.</span>
-      </div>
-      <div class="gtoggle-item" id="gtoggle-conn-item" style="display:none;">
-        <label class="gtoggle"><input type="checkbox" id="gt-conn" onchange="renderGraphs()"><span class="gtoggle-slider"></span></label>
-        <span class="gtoggle-label"><span class="gt-icon">📡</span> Σύνδεση</span>
-      </div>
+    <div class="graph-toggles gchips">
+      <label class="gchip gchip-weight"><input type="checkbox" id="gt-weight" checked onchange="renderGraphs()"><span class="gchip-body"><span class="gchip-emoji">⚖️</span><span class="gchip-text">Βάρος</span></span></label>
+      <label class="gchip gchip-temp"><input type="checkbox" id="gt-temp" checked onchange="renderGraphs()"><span class="gchip-body"><span class="gchip-emoji">🌡️</span><span class="gchip-text">Θερμοκρασία</span></span></label>
+      <label class="gchip gchip-hum"><input type="checkbox" id="gt-hum" onchange="renderGraphs()"><span class="gchip-body"><span class="gchip-emoji">💧</span><span class="gchip-text">Υγρασία</span></span></label>
+      <label class="gchip gchip-bat"><input type="checkbox" id="gt-bat" onchange="renderGraphs()"><span class="gchip-body"><span class="gchip-emoji">🔋</span><span class="gchip-text">Μπαταρία</span></span></label>
+      <label class="gchip gchip-sig"><input type="checkbox" id="gt-sig" onchange="renderGraphs()"><span class="gchip-body"><span class="gchip-emoji">📶</span><span class="gchip-text">Σήμα</span></span></label>
+      <label class="gchip gchip-conn" id="gtoggle-conn-item" style="display:none;"><input type="checkbox" id="gt-conn" onchange="renderGraphs()"><span class="gchip-body"><span class="gchip-emoji">📡</span><span class="gchip-text">Σύνδεση</span></span></label>
     </div>
     <div class="graphs-compare-row" id="graphs-compare-row">
       <div class="compare-toggle-line">
@@ -1047,7 +1059,7 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.4</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.6</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">

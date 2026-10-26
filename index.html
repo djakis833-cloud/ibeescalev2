@@ -712,6 +712,27 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
 .wx-res span{font-size:12.5px;color:var(--mute)}
 .wx-sheet-msg{min-height:18px;margin-top:8px;font-size:12.5px;color:var(--mute)}
 .wx-reset{display:none;margin-top:6px;padding:8px 0;background:none;border:0;color:var(--red);font-size:13px;font-weight:600;cursor:pointer}
+.wx-fc{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:10px;padding:8px 10px;background:none;color:var(--ink);border:1px solid var(--rule);border-radius:4px;font-size:13px;font-weight:600;cursor:pointer}
+.wx-fc[hidden]{display:none}
+.wx-fc:active{background:var(--panel2)}
+.wx-fc svg{flex-shrink:0;color:var(--green)}
+.wx-seg{display:grid;grid-template-columns:1fr 1fr;margin:0 0 6px;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.wx-seg button{padding:9px 0;background:none;border:0;color:var(--mute);font-size:14px;font-weight:600;cursor:pointer}
+.wx-seg button+button{border-left:1px solid var(--rule)}
+.wx-seg button[aria-pressed=true]{background:var(--green);color:var(--on-green)}
+.wx-fc-list{margin-top:4px}
+.wx-sheet.wx-sheet-fc{display:flex;flex-direction:column;overflow:hidden;max-height:88vh;max-height:88dvh}
+.wx-sheet-fc .wx-sheet-head,.wx-sheet-fc .wx-sheet-sub,.wx-sheet-fc .wx-seg,.wx-sheet-fc .wx-sheet-msg{flex:none}
+.wx-sheet-fc .wx-fc-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.wx-fc-row{display:grid;grid-template-columns:58px 30px minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px dashed var(--rule)}
+.wx-fc-row:last-child{border-bottom:0}
+.wx-fc-day{font-size:14px;font-weight:700;line-height:1.2}
+.wx-fc-day small{display:block;font-size:11.5px;font-weight:500;color:var(--mute)}
+.wx-fc-ico{font-size:24px;line-height:1;text-align:center}
+.wx-fc-info{min-width:0;font-size:13px;font-weight:600;line-height:1.3}
+.wx-fc-info small{display:block;font-size:12px;font-weight:400;color:var(--mute)}
+.wx-fc-t{font-family:var(--num);font-size:22px;font-weight:700;line-height:1.1;text-align:right;white-space:nowrap}
+.wx-fc-t small{display:block;font-size:15px;font-weight:600;color:var(--mute)}
 .wx[data-state=note] .wx-note{display:block}
 .wx[data-state=note] .wx-main{display:none}
 
@@ -769,7 +790,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.23.6</div>
+    <div class="login-version">ver. 15.24.3</div>
     <div class="login-contact login-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
@@ -928,6 +949,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
             <div class="wx-cell"><b id="wx-hum">—</b><i>Υγρασία</i></div>
             <div class="wx-cell"><b><svg class="wx-arrow" id="wx-arrow" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 3v18M12 3l-6 6M12 3l6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="wx-wind">—</span><small>km/h</small></b><i>Άνεμος <span id="wx-dir"></span></i></div>
           </div>
+          <button class="wx-fc" id="wx-fc" type="button" hidden><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Πρόβλεψη καιρού</button>
         </div>
         <div class="wx-note" id="wx-note"><span id="wx-note-msg"></span><button class="wx-set" id="wx-note-btn" type="button"></button></div>
       </div>
@@ -1059,7 +1081,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.23.6</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.24.3</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">
@@ -3132,6 +3154,28 @@ if ('serviceWorker' in navigator) {
     return geo[id];
   }
 
+  // Όνομα περιοχής από συντεταγμένες (OpenStreetMap, ίδια υπηρεσία με την αναζήτηση)
+  async function areaName(lat, lon) {
+    try {
+      const ac = new AbortController(), t = setTimeout(() => ac.abort(), 6000);
+      const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=el&lat=' + lat + '&lon=' + lon, { signal: ac.signal });
+      clearTimeout(t);
+      if (!r.ok) return '';
+      const a = (await r.json()).address || {};
+      return a.village || a.hamlet || a.town || a.suburb || a.city || a.municipality || a.county || '';
+    } catch (e) { return ''; }
+  }
+  const tried = {};
+  async function fixName(id, g) {           // παλιότερη επιλογή GPS που αποθηκεύτηκε ως «Η τοποθεσία μου»
+    const k = g && g.lat + ',' + g.lon;
+    if (!g || g.name !== 'Η τοποθεσία μου' || tried[k]) return;
+    tried[k] = 1;
+    const n = await areaName(g.lat, g.lon), cur = getSaved(id);
+    if (!n || !cur || cur.lat !== g.lat || cur.lon !== g.lon) return;
+    g.name = n; g.gps = true; putSaved(id, g);
+    if (curCh() === id) set('wx-place-name', n);
+  }
+
   let noteFn = null;
   function note(msg, btn, fn) {
     set('wx-note-msg', msg); set('wx-note-btn', btn); noteFn = fn;
@@ -3161,6 +3205,8 @@ if ('serviceWorker' in navigator) {
       if (stale()) return;
       fill(c.d); set('wx-place-name', g.name || 'Περιοχή');
       box.dataset.state = 'ok';
+      const fb = $('wx-fc'); if (fb) fb.hidden = !getSaved(id);   // πρόβλεψη μόνο όταν έχει επιλεγεί περιοχή
+      fixName(id, g);
     } catch (e) {
       if (stale()) return;
       if (box.dataset.state !== 'ok') note('Ο καιρός δεν είναι διαθέσιμος αυτή τη στιγμή.', 'Επανάληψη', load);
@@ -3194,7 +3240,12 @@ if ('serviceWorker' in navigator) {
       if (!navigator.geolocation) { msg('Η συσκευή δεν υποστηρίζει εντοπισμό τοποθεσίας.'); return; }
       msg('Εντοπισμός…');
       navigator.geolocation.getCurrentPosition(
-        p => choose({ lat: +p.coords.latitude.toFixed(4), lon: +p.coords.longitude.toFixed(4), name: 'Η τοποθεσία μου' }),
+        async p => {
+          const lat = +p.coords.latitude.toFixed(4), lon = +p.coords.longitude.toFixed(4);
+          msg('Εύρεση περιοχής…');
+          const n = await areaName(lat, lon);
+          choose({ lat, lon, name: n || 'Η τοποθεσία μου', gps: true });
+        },
         err => {
           const c = err && err.code;
           if (!window.isSecureContext) msg('Ο εντοπισμός λειτουργεί μόνο σε ασφαλή σύνδεση (https). Αναζητήστε την περιοχή με το όνομά της.');
@@ -3306,6 +3357,68 @@ if ('serviceWorker' in navigator) {
     $('wx-overlay').classList.add('visible');
   }
 
+  // ── Πρόβλεψη 5 ή 10 ημερών για την επιλεγμένη περιοχή ──
+  const fcCache = {}, DAYS = ['Κυρ', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ'];
+  let fcBuilt = false, fcSeq = 0, fcData = null, fcDays = 5;
+  try { localStorage.removeItem('wx_fcdays'); } catch (e) {}   // καθαρισμός παλιάς αποθηκευμένης επιλογής
+  function syncSeg() { document.querySelectorAll('#wx-fc-overlay .wx-seg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.d === fcDays))); }
+  const dirOf = x => isFinite(x) && x !== null ? DIRS[Math.round(x / 45) % 8] : '';
+  const p2 = n => String(n).padStart(2, '0');
+  function fcClose() { const o = $('wx-fc-overlay'); if (o) o.classList.remove('visible'); }
+  function fcBuild() {
+    if (fcBuilt) return; fcBuilt = true;
+    document.body.insertAdjacentHTML('beforeend',
+      '<div class="wx-overlay" id="wx-fc-overlay" role="dialog" aria-modal="true" aria-labelledby="wx-fc-title"><div class="wx-sheet wx-sheet-fc">' +
+      '<div class="wx-sheet-head"><div class="wx-sheet-title" id="wx-fc-title">Πρόβλεψη καιρού</div><button class="wx-x" id="wx-fc-close" type="button" aria-label="Κλείσιμο">×</button></div>' +
+      '<div class="wx-sheet-sub" id="wx-fc-sub"></div>' +
+      '<div class="wx-seg" role="group" aria-label="Διάστημα πρόβλεψης"><button type="button" data-d="5" aria-pressed="true">5 ημέρες</button><button type="button" data-d="10" aria-pressed="false">10 ημέρες</button></div>' +
+      '<div class="wx-fc-list" id="wx-fc-list"></div>' +
+      '<div class="wx-sheet-msg" id="wx-fc-msg"></div></div></div>');
+    const ov = $('wx-fc-overlay');
+    ov.addEventListener('click', e => { if (e.target === ov) fcClose(); });
+    $('wx-fc-close').addEventListener('click', fcClose);
+    ov.querySelector('.wx-seg').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      fcDays = +b.dataset.d === 10 ? 10 : 5;
+      syncSeg(); if (fcData) renderFc(fcData);
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fcClose(); });
+  }
+  function renderFc(d) {
+    const list = $('wx-fc-list'); list.textContent = '';
+    (d.time || []).slice(0, fcDays).forEach((t, i) => {
+      const q = t.split('-'), dt = new Date(+q[0], +q[1] - 1, +q[2]), w = wmo(d.weather_code[i], true);
+      const pr = d.precipitation_probability_max ? d.precipitation_probability_max[i] : null;
+      const row = document.createElement('div'); row.className = 'wx-fc-row';
+      row.innerHTML = '<div class="wx-fc-day">' + (i === 0 ? 'Σήμερα' : i === 1 ? 'Αύριο' : DAYS[dt.getDay()]) + '<small>' + p2(dt.getDate()) + '/' + p2(dt.getMonth() + 1) + '</small></div>' +
+        '<div class="wx-fc-ico">' + w[0] + '</div>' +
+        '<div class="wx-fc-info">' + w[1] + '<small>💧 ' + (pr == null ? '—' : Math.round(pr) + '%') + ' · 💨 ' + Math.round(d.wind_speed_10m_max[i]) + ' km/h ' + dirOf(d.wind_direction_10m_dominant[i]) + '</small></div>' +
+        '<div class="wx-fc-t">' + Math.round(d.temperature_2m_max[i]) + '°<small>' + Math.round(d.temperature_2m_min[i]) + '°</small></div>';
+      list.appendChild(row);
+    });
+  }
+  async function openForecast() {
+    const g = getSaved(curCh());
+    if (!g) return;
+    fcBuild(); fcData = null; fcDays = 5; syncSeg();
+    const my = ++fcSeq;
+    set('wx-fc-sub', '📍 ' + (g.name || 'Περιοχή')); $('wx-fc-list').textContent = ''; set('wx-fc-msg', 'Φόρτωση…');
+    $('wx-fc-overlay').classList.add('visible');
+    try {
+      const key = g.lat + ',' + g.lon;
+      let c = fcCache[key];
+      if (!c || Date.now() - c.t > TTL) {
+        const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + g.lat + '&longitude=' + g.lon +
+          '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant' +
+          '&forecast_days=10&wind_speed_unit=kmh&timezone=auto');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        c = fcCache[key] = { t: Date.now(), d: (await r.json()).daily };
+      }
+      if (my !== fcSeq) return;
+      fcData = c.d; renderFc(fcData); set('wx-fc-msg', 'Πηγή: Open-Meteo');
+    } catch (e) { if (my === fcSeq) set('wx-fc-msg', 'Η πρόβλεψη δεν είναι διαθέσιμη αυτή τη στιγμή. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.'); }
+  }
+
   // Ανανέωση καιρού μαζί με κάθε ενημέρωση της οθόνης (χωρίς αλλαγή του υπάρχοντος κώδικα)
   const orig = window.updateUI;
   if (typeof orig === 'function') {
@@ -3317,6 +3430,7 @@ if ('serviceWorker' in navigator) {
   }
   const place = $('wx-place'), nb = $('wx-note-btn'), row = document.querySelector('#wx .wx-row');
   if (place) place.addEventListener('click', openPicker);
+  const fcb = $('wx-fc'); if (fcb) fcb.addEventListener('click', openForecast);
   if (nb) nb.addEventListener('click', () => { if (noteFn) noteFn(); });
   if (row) row.addEventListener('click', () => { const g = getSaved(curCh()); if (g) delete cache[g.lat + ',' + g.lon]; load(); });
   window.addEventListener('online', () => { try { load(); } catch (e) {} });

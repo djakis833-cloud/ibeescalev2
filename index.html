@@ -733,6 +733,15 @@ body:not(.z) .compare-ch-btn.active::before{content:'✓ '}
 .wx-fc-info small{display:block;font-size:12px;font-weight:400;color:var(--mute)}
 .wx-fc-t{font-family:var(--num);font-size:22px;font-weight:700;line-height:1.1;text-align:right;white-space:nowrap}
 .wx-fc-t small{display:block;font-size:15px;font-weight:600;color:var(--mute)}
+.wx-fc-row{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wx-fc-row:active,.wx-fc-row.open{background:var(--panel2)}
+.wx-fc-hours{position:relative;display:flex;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:8px 0 10px;background:var(--panel2);border-bottom:1px dashed var(--rule)}
+.wx-fc-hr{flex:0 0 62px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:2px 0;font-size:11.5px;white-space:nowrap;color:var(--mute);border-left:1px solid var(--rule)}
+.wx-fc-hr:first-child{border-left:0}
+.wx-fc-hr .h{font-size:13px;font-weight:700;color:var(--ink)}
+.wx-fc-hr .i{font-size:22px;line-height:1.2}
+.wx-fc-hr b{font-family:var(--num);font-size:18px;font-weight:700;color:var(--ink)}
+.wx-fc-hr.now .h{color:var(--green)}
 .wx[data-state=note] .wx-note{display:block}
 .wx[data-state=note] .wx-main{display:none}
 
@@ -790,7 +799,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.24.4</div>
+    <div class="login-version">ver. 15.25.0</div>
     <div class="login-contact login-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
@@ -1081,7 +1090,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.24.4</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.25.0</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">
@@ -3390,7 +3399,7 @@ if ('serviceWorker' in navigator) {
 
   // ── Πρόβλεψη 5 ή 10 ημερών για την επιλεγμένη περιοχή ──
   const fcCache = {}, DAYS = ['Κυρ', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ'];
-  let fcBuilt = false, fcSeq = 0, fcData = null, fcDays = 5;
+  let fcBuilt = false, fcSeq = 0, fcData = null, fcDays = 5, fcHourly = null, fcOff = 0;
   try { localStorage.removeItem('wx_fcdays'); } catch (e) {}   // καθαρισμός παλιάς αποθηκευμένης επιλογής
   function syncSeg() { document.querySelectorAll('#wx-fc-overlay .wx-seg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.d === fcDays))); }
   const dirOf = x => isFinite(x) && x !== null ? DIRS[Math.round(x / 45) % 8] : '';
@@ -3425,13 +3434,44 @@ if ('serviceWorker' in navigator) {
         '<div class="wx-fc-ico">' + w[0] + '</div>' +
         '<div class="wx-fc-info">' + w[1] + '<small>💧 ' + (pr == null ? '—' : Math.round(pr) + '%') + ' · 💨 ' + Math.round(d.wind_speed_10m_max[i]) + ' km/h ' + dirOf(d.wind_direction_10m_dominant[i]) + '</small></div>' +
         '<div class="wx-fc-t">' + Math.round(d.temperature_2m_max[i]) + '°<small>' + Math.round(d.temperature_2m_min[i]) + '°</small></div>';
+      row.setAttribute('role', 'button'); row.tabIndex = 0; row.setAttribute('aria-expanded', 'false');
+      row.addEventListener('click', () => toggleHours(row, t, i));
+      row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleHours(row, t, i); } });
       list.appendChild(row);
     });
+  }
+  // Πρόβλεψη ωρών: ανοίγει ακριβώς κάτω από την ημέρα που πατήθηκε (μία κάθε φορά)
+  function toggleHours(row, day, i) {
+    const list = $('wx-fc-list'), wasOpen = row.classList.contains('open');
+    list.querySelectorAll('.wx-fc-hours').forEach(b => b.remove());
+    list.querySelectorAll('.wx-fc-row.open').forEach(r => { r.classList.remove('open'); r.setAttribute('aria-expanded', 'false'); });
+    if (wasOpen || !fcHourly) return;
+    const H = fcHourly, idx = [];
+    (H.time || []).forEach((t, k) => { if (t.slice(0, 10) === day) idx.push(k); });
+    if (!idx.length) return;
+    // Τρέχουσα ώρα της περιοχής (όχι του κινητού) — μόνο για τη σημερινή ημέρα
+    const nowH = i === 0 ? new Date(Date.now() + fcOff * 1000).getUTCHours() : -1;
+    const box = document.createElement('div'); box.className = 'wx-fc-hours';
+    idx.forEach(k => {
+      const hh = +H.time[k].slice(11, 13), w = wmo(H.weather_code[k], H.is_day[k] === 1);
+      const pr = H.precipitation_probability ? H.precipitation_probability[k] : null;
+      const cell = document.createElement('div'); cell.className = 'wx-fc-hr' + (hh === nowH ? ' now' : '');
+      cell.innerHTML = '<span class="h">' + (hh === nowH ? 'Τώρα' : p2(hh) + ':00') + '</span><span class="i">' + w[0] + '</span>' +
+        '<b>' + Math.round(H.temperature_2m[k]) + '°</b>' +
+        '<span>💧' + (pr == null ? '—' : Math.round(pr) + '%') + '</span>' +
+        '<span>💨' + Math.round(H.wind_speed_10m[k]) + ' ' + dirOf(H.wind_direction_10m[k]) + '</span>';
+      box.appendChild(cell);
+    });
+    row.classList.add('open'); row.setAttribute('aria-expanded', 'true');
+    row.after(box);
+    const nowEl = box.querySelector('.now');
+    if (nowEl) box.scrollLeft = Math.max(0, nowEl.offsetLeft - 4);
+    box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   async function openForecast() {
     const g = getSaved(curCh());
     if (!g) return;
-    fcBuild(); fcData = null; fcDays = 5; syncSeg();
+    fcBuild(); fcData = null; fcHourly = null; fcDays = 5; syncSeg();
     const my = ++fcSeq;
     set('wx-fc-sub', '📍 ' + (g.name || 'Περιοχή')); $('wx-fc-list').textContent = ''; set('wx-fc-msg', 'Φόρτωση…');
     $('wx-fc-overlay').classList.add('visible');
@@ -3441,12 +3481,13 @@ if ('serviceWorker' in navigator) {
       if (!c || Date.now() - c.t > TTL) {
         const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + g.lat + '&longitude=' + g.lon +
           '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant' +
+          '&hourly=weather_code,temperature_2m,precipitation_probability,wind_speed_10m,wind_direction_10m,is_day' +
           '&forecast_days=10&wind_speed_unit=kmh&timezone=auto');
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        c = fcCache[key] = { t: Date.now(), d: (await r.json()).daily };
+        const j = await r.json(); c = fcCache[key] = { t: Date.now(), d: j.daily, h: j.hourly, off: j.utc_offset_seconds || 0 };
       }
       if (my !== fcSeq) return;
-      fcData = c.d; renderFc(fcData); set('wx-fc-msg', 'Πηγή: Open-Meteo');
+      fcData = c.d; fcHourly = c.h; fcOff = c.off || 0; renderFc(fcData); set('wx-fc-msg', 'Πατήστε μια ημέρα για πρόβλεψη ανά ώρα · Πηγή: Open-Meteo');
     } catch (e) { if (my === fcSeq) set('wx-fc-msg', 'Η πρόβλεψη δεν είναι διαθέσιμη αυτή τη στιγμή. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.'); }
   }
 

@@ -413,6 +413,7 @@ body.dark-mode .dark-mode-icon-btn { color:#fbbf24; border-color:#4b5563; backgr
 .notif-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
 .btn-notif { width: 100%; padding: 13px; background: #777; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; cursor: pointer; transition: background 0.2s; }
 .notif-info { font-size: 12px; color: #888; text-align: center; margin-top: 8px; min-height: 16px; }
+.btn-calib-link { display: block; text-align: center; text-decoration: none; }
 /* ── HUMIDITY TOAST ── */
 #hum-toast { position: fixed; top: 360px; left: 50%; transform: translateX(-50%) scale(0.88); background: #1a6dcc; color: #fff; border-radius: 12px; padding: 12px 20px; font-size: 14px; font-weight: 700; text-align: center; max-width: 300px; width: 88%; box-shadow: 0 6px 18px #9fc2ee; z-index: 1600; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; line-height: 1.4; }
 #hum-toast.show { opacity: 1; transform: translateX(-50%) scale(1); }
@@ -1123,7 +1124,14 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       </div>
     </div>
 
-    <div class="info-section-title">Σημειώσεις</div>
+    <div class="info-section-title">Βαθμονόμηση ζυγαριάς</div>
+<div class="notif-wrap">
+<div class="notif-desc">Ρύθμιση απόβαρου και παράγοντα (factor) απευθείας από τη ζυγαριά, με άδεια ζυγαριά:<br>1. Συνδεθείτε στο WiFi <b>Kypseli-Zygaria</b> της ζυγαριάς με password <b>12341234</b><br>2. Πατήστε το κουμπί παρακάτω<br>3. Όταν τελειώσετε, επιστρέψτε στο κανονικό WiFi</div>
+<a class="btn-notif btn-calib-link" href="http://192.168.4.1" target="_blank" rel="noopener">⚖️ Άνοιγμα βαθμονόμησης</a>
+<div class="notif-info">Η σελίδα ανοίγει από τη ζυγαριά και δεν χρειάζεται internet.</div>
+</div>
+
+<div class="info-section-title">Σημειώσεις</div>
     <div class="notes-wrap">
       <textarea class="notes-textarea" id="notes-textarea" placeholder="Σημειώσεις ζυγαριάς..."></textarea>
       <div class="notes-btn-row">

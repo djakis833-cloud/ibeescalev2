@@ -790,7 +790,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
     <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
   </div>
   <div class="login-footer">
-    <div class="login-version">ver. 15.24.3</div>
+    <div class="login-version">ver. 15.24.4</div>
     <div class="login-contact login-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
@@ -1081,7 +1081,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.24.3</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v15.24.4</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">
@@ -1650,13 +1650,18 @@ document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key
   if (u && p) { document.getElementById('inp-user').value = u; document.getElementById('inp-pass').value = p; document.getElementById('chk-remember').checked = true; }
 })();
 
-// ── ΩΡΑ ΣΥΣΚΕΥΗΣ (σταθερή UTC+3) ──
+// ── ΩΡΑ ΣΥΣΚΕΥΗΣ (σταθερή UTC+3) ΓΙΑ ΛΟΓΙΚΗ  /  ΩΡΑ ΕΛΛΑΔΑΣ ΓΙΑ ΕΜΦΑΝΙΣΗ ──
 // Ο χρονοδιακόπτης (CN101A) που τροφοδοτεί τον ESP32 μένει ΜΟΝΙΜΑ στη θερινή ώρα (UTC+3)
-// και δεν αλλάζει σε χειμερινή. Όλες οι ώρες που εμφανίζονται στην εφαρμογή (μετρήσεις,
-// γραφήματα, αναφορές) είναι σε ώρα συσκευής (UTC+3) ΟΛΟ τον χρόνο. ΕΞΑΙΡΕΣΗ: οι «ώρες
-// αφύπνισης» (field7) μένουν σε ώρα Ελλάδας που αλλάζει, γιατί έτσι τις διαβάζει ο ESP32,
-// ανεξάρτητα από την τοπική ώρα του κινητού/browser (που τον χειμώνα είναι UTC+2).
-// Έτσι η βραδινή μέτρηση φαίνεται πάντα 21:00 και όχι 20:00 μετά την αλλαγή ώρας.
+// και δεν αλλάζει σε χειμερινή.
+// • ΛΟΓΙΚΗ (παράθυρα αποστολής SCHEDULE_HOURS, «χθεσινή βραδινή μέτρηση 21:00», βραδινή
+//   μέτρηση, ομαδοποίηση ημερών): γίνεται ΠΑΝΤΑ σε ώρα συσκευής (UTC+3) μέσω
+//   devDate / devToUtcMs / deviceHour.
+// • ΕΜΦΑΝΙΣΗ (fmtDate/fmtDateShort/fmtTimeOnly, φίλτρο ημερομηνιών, TARE στο sheet):
+//   σε ώρα Ελλάδας (Europe/Athens, με αλλαγή θερινής/χειμερινής) μέσω athParts / athToUtcMs,
+//   ώστε οι ώρες να συμφωνούν με το ThingSpeak. Τον χειμώνα η βραδινή μέτρηση (21:00 ώρα
+//   συσκευής) εμφανίζεται 20:00.
+// ΕΞΑΙΡΕΣΗ: οι «ώρες αφύπνισης» (field7) μένουν σε ώρα Ελλάδας που αλλάζει, γιατί έτσι τις
+// διαβάζει ο ESP32, ανεξάρτητα από την τοπική ώρα του κινητού/browser.
 const DEVICE_UTC_OFFSET_MIN = 180;
 const DEVICE_SHIFT_MS = DEVICE_UTC_OFFSET_MIN * 60000;
 // Επιστρέφει Date μετατοπισμένο ώστε τα getUTC*() να δίνουν την ώρα συσκευής.
@@ -1669,21 +1674,47 @@ function devToUtcMs(y, mo0, d, h, mi, s) { return Date.UTC(y, mo0, d, h || 0, mi
 function deviceHour(v) { return devDate(v).getUTCHours(); }
 function pad2(n) { return String(n).padStart(2, '0'); }
 
+// Ώρα Ελλάδας (με θερινή/χειμερινή) — ΜΟΝΟ για εμφάνιση.
+const DISPLAY_TZ = 'Europe/Athens';
+let _athFmt = null;
+// Επιστρέφει {y, mo (1-12), d, h, mi, s} σε ώρα Ελλάδας για μια χρονική στιγμή.
+function athParts(v) {
+  const t = (v instanceof Date) ? v.getTime() : (typeof v === 'number' ? v : new Date(v).getTime());
+  try {
+    if (!_athFmt) _athFmt = new Intl.DateTimeFormat('en-GB', { timeZone: DISPLAY_TZ, hourCycle: 'h23',
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const o = {};
+    _athFmt.formatToParts(new Date(t)).forEach(x => { if (x.type !== 'literal') o[x.type] = parseInt(x.value, 10); });
+    return { y: o.year, mo: o.month, d: o.day, h: o.hour % 24, mi: o.minute, s: o.second };
+  } catch (e) {
+    const d = new Date(t); // εφεδρικά: τοπική ώρα browser
+    return { y: d.getFullYear(), mo: d.getMonth() + 1, d: d.getDate(), h: d.getHours(), mi: d.getMinutes(), s: d.getSeconds() };
+  }
+}
+// Διαφορά (ms) ώρας Ελλάδας από UTC τη δεδομένη στιγμή (+2h χειμώνα, +3h καλοκαίρι).
+function athOffsetMs(utcMs) {
+  const p = athParts(utcMs);
+  return Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - Math.floor(utcMs / 1000) * 1000;
+}
+// Ώρα Ελλάδας (έτος, μήνας 0-11, ημέρα, ώρα, λεπτό, δευτ.) -> πραγματική χρονική στιγμή σε ms.
+function athToUtcMs(y, mo0, d, h, mi, s) {
+  const wall = Date.UTC(y, mo0, d, h || 0, mi || 0, s || 0);
+  const t1 = wall - athOffsetMs(wall);
+  return wall - athOffsetMs(t1);
+}
+
 // ── HELPERS ──
 function fmtDate(iso) {
-  const d = devDate(iso);
-  return pad2(d.getUTCDate()) + '/' + pad2(d.getUTCMonth()+1) + '/' + d.getUTCFullYear()
-    + ' - ' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
+  const p = athParts(iso);
+  return pad2(p.d) + '/' + pad2(p.mo) + '/' + p.y + ' - ' + pad2(p.h) + ':' + pad2(p.mi);
 }
 function fmtDateShort(iso) {
-  const d = devDate(iso);
-  return pad2(d.getUTCDate()) + '/' + pad2(d.getUTCMonth()+1)
-    + '\n' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
+  const p = athParts(iso);
+  return pad2(p.d) + '/' + pad2(p.mo) + '\n' + pad2(p.h) + ':' + pad2(p.mi);
 }
 function fmtTimeOnly(iso) {
-  const d = devDate(iso);
-  return pad2(d.getUTCDate()) + '/' + pad2(d.getUTCMonth()+1)
-    + ' ' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
+  const p = athParts(iso);
+  return pad2(p.d) + '/' + pad2(p.mo) + ' ' + pad2(p.h) + ':' + pad2(p.mi);
 }
 // Μορφοποιεί τα γραμμάρια με τελεία χιλιάδων (π.χ. -30540 -> -30.540 gr)
 function fmtSignedGrams(grams) {
@@ -2060,9 +2091,9 @@ function getFilteredFeeds(sourceFeeds) {
     const from = document.getElementById('inp-date-from').value;
     const to   = document.getElementById('inp-date-to').value;
     if (!from && !to) return src.slice(-50);
-    // Οι ημερομηνίες "από/έως" ερμηνεύονται σε ώρα συσκευής (όπως τα δεδομένα στην οθόνη)
-    const fromTs = from ? devToUtcMs(...from.split('-').map((x, i) => i === 1 ? parseInt(x, 10) - 1 : parseInt(x, 10)), 0, 0, 0) : 0;
-    const toTs   = to   ? devToUtcMs(...to.split('-').map((x, i) => i === 1 ? parseInt(x, 10) - 1 : parseInt(x, 10)), 23, 59, 59) : Infinity;
+    // Οι ημερομηνίες "από/έως" ερμηνεύονται σε ώρα Ελλάδας (όπως τα δεδομένα στην οθόνη)
+    const fromTs = from ? athToUtcMs(...from.split('-').map((x, i) => i === 1 ? parseInt(x, 10) - 1 : parseInt(x, 10)), 0, 0, 0) : 0;
+    const toTs   = to   ? athToUtcMs(...to.split('-').map((x, i) => i === 1 ? parseInt(x, 10) - 1 : parseInt(x, 10)), 23, 59, 59) : Infinity;
     return src.filter(f => { const t = new Date(f.created_at).getTime(); return t >= fromTs && t <= toTs; });
   }
 }
@@ -3039,7 +3070,7 @@ function parseSheetTareValue(str) {
     const day = parseInt(m[2], 10), month = parseInt(m[3], 10), year = parseInt(m[4], 10);
     const hour = parseInt(m[5], 10), minute = parseInt(m[6], 10);
     if (!isNaN(weight)) {
-      const dateObj = new Date(devToUtcMs(year, month - 1, day, hour, minute, 0)); // ώρα συσκευής
+      const dateObj = new Date(athToUtcMs(year, month - 1, day, hour, minute, 0)); // ώρα Ελλάδας (όπως τη γράφει η fmtDate)
       if (!isNaN(dateObj.getTime())) return { weight, dateISO: dateObj.toISOString() };
     }
   }

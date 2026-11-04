@@ -775,35 +775,244 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
 #login-screen .login-support{display:flex;align-items:center;justify-content:center;gap:7px;font-size:15px;font-weight:500;color:#e8eee8}
 #login-screen .login-support svg{width:17px;height:17px;flex:none;fill:none;stroke:#5ed48c;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #login-screen .login-support a{color:#5ed48c;font-weight:700;letter-spacing:.2px;text-decoration:none}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Login · Eclipse — κυκλική κάρτα με φωτεινό δακτύλιο (χρυσό μέλι → πράσινο)
+   Πάνω στη φωτογραφία κηρήθρας. Όλα τα μεγέθη κλιμακώνονται από τη
+   διάμετρο --d (1u = 1% της διαμέτρου).
+   Η φωτογραφία (--honeycomb) και το φόντο του #login-screen μένουν όπως ήταν.
+   ══════════════════════════════════════════════════════════════════════ */
+#login-screen{
+  /* η κάρτα κάθεται κάτω από το λογότυπο της φωτογραφίας (όπως και πριν) */
+  --top:calc(max(100vh,179.2vw) * .30);
+  --d:clamp(280px,min(88vw,100svh - var(--top) - 112px),420px);
+  --u:calc(var(--d) / 100);
+  /* παλέτα της εφαρμογής */
+  --lg-gold:#F2B63C; --lg-amber:#E3A11A; --lg-gold-soft:#ffd778;
+  --lg-green:#4a9e4a; --lg-green-l:#7ec87e; --lg-mint:#a8d5a8; --lg-leaf:#5ed48c;
+  --lg-ink:#f3f6ee;
+  font-family:'Fira Sans','Segoe UI',system-ui,sans-serif;
+  justify-content:flex-start; padding:24px 12px; padding-top:var(--top); overflow-x:hidden; overflow-y:auto;
+}
+@media (min-width:600px){ #login-screen{--d:400px} }
+#login-screen .lg-wrap{position:relative;margin:16px auto auto;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*6)}
+
+/* ── σκηνή: ακολουθεί ελαφρά το ποντίκι ── */
+.lg-stage{position:relative;width:var(--d);height:var(--d);--tx:0;--ty:0;
+  transform:perspective(1100px) rotateY(calc(var(--tx)*7deg)) rotateX(calc(var(--ty)*-7deg));
+  transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.lg-halo{position:absolute;inset:calc(var(--u)*-22);border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle closest-side,transparent 66%,rgba(242,182,60,.26) 71%,rgba(227,161,26,.10) 86%,transparent 100%);
+  animation:lgFade 1.4s .1s both,lgBreathe 7s 1.5s ease-in-out infinite}
+.lg-drift,.lg-orbit,.lg-spin{position:absolute;inset:0;border-radius:50%;pointer-events:none}
+.lg-drift{transform:translate(calc(var(--tx)*var(--u)*-2.2),calc(var(--ty)*var(--u)*-2.2));transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.lg-orbit{animation:lgRingIn 1.3s cubic-bezier(.2,.7,.2,1) both}
+.lg-spin{animation:lgSpin 16s linear infinite}
+.lg-ring,.lg-edge{position:absolute;border-radius:50%}
+/* η λάμψη είναι δακτύλιος (όχι γεμάτος δίσκος), ώστε να μη φαίνεται μέσα από τη διαφάνεια της κάρτας */
+.lg-ring{inset:calc(var(--u)*-2.6);filter:blur(calc(var(--u)*3.6))}
+.lg-ring::before,.lg-edge{content:"";position:absolute;border-radius:50%;
+  background:conic-gradient(from 0deg,#ffd778 0deg,#F2B63C 80deg,#E3A11A 140deg,#7ec87e 182deg,#3f9a62 201deg,#B8741A 236deg,rgba(130,78,14,.55) 285deg,#F2B63C 332deg,#ffd778 360deg)}
+.lg-ring::before{inset:0;
+  -webkit-mask:radial-gradient(circle closest-side,transparent 76%,#000 86%);
+          mask:radial-gradient(circle closest-side,transparent 76%,#000 86%)}
+.lg-edge{inset:calc(var(--u)*-.55);filter:blur(.5px);
+  -webkit-mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*1.2),#000 calc(100% - var(--u)*.6));
+          mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*1.2),#000 calc(100% - var(--u)*.6))}
+/* αναλαμπή που κυκλώνει το δακτύλιο όσο γίνεται η σύνδεση */
+.lg-scan{position:absolute;inset:calc(var(--u)*-.55);border-radius:50%;opacity:0;transition:opacity .35s;
+  background:conic-gradient(from 0deg,transparent 0 250deg,rgba(255,224,150,.55) 320deg,#fff8e1 358deg,transparent 360deg);
+  -webkit-mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*2.4),#000 calc(100% - var(--u)*1.2));
+          mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*2.4),#000 calc(100% - var(--u)*1.2));
+  animation:lgSpin 1.15s linear infinite}
+#login-screen:has(#btn-login:disabled) .lg-scan{opacity:1}
+
+/* ── ο δίσκος: σκούρο πράσινο, ελαφρώς διαφανές πάνω στη φωτογραφία ── */
+.lg-disc{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 38% 26%,rgba(28,60,32,.86) 0%,rgba(14,38,18,.9) 46%,rgba(5,18,8,.94) 100%);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:inset calc(var(--u)*2.4) calc(var(--u)*1.2) calc(var(--u)*4) rgba(0,0,0,.5),
+             inset calc(var(--u)*-1) calc(var(--u)*-1) calc(var(--u)*3) rgba(255,215,120,.07),
+             0 0 calc(var(--u)*3) rgba(0,0,0,.55);
+  animation:lgDiscIn .9s .12s cubic-bezier(.2,.7,.2,1) both}
+.lg-body{width:calc(var(--u)*72);display:flex;flex-direction:column;align-items:stretch}
+
+.lg-title{margin:0;text-align:center;font-weight:800;font-size:calc(var(--u)*6.6);line-height:1.1;letter-spacing:.06em;
+  color:#fff4d8;text-shadow:0 0 .32em rgba(242,182,60,.8),0 0 1em rgba(227,161,26,.45)}
+.lg-sub{margin:calc(var(--u)*1.6) 0 calc(var(--u)*5);text-align:center;font-size:max(12px,calc(var(--u)*3.5));color:var(--lg-mint)}
+
+/* ── πεδία: στρογγυλά, με ετικέτα που ανεβαίνει στο περίγραμμα ── */
+.lg-field{position:relative;margin-bottom:calc(var(--u)*3.2)}
+.lg-field input{display:block;width:100%;height:max(42px,calc(var(--u)*12));padding:0 calc(var(--u)*5);
+  border-radius:999px;border:1.5px solid rgba(255,215,120,.22);background:rgba(3,12,5,.78);
+  color:var(--lg-ink);font-family:inherit;font-size:16px;font-weight:500;
+  outline:2px solid transparent;transition:border-color .25s,box-shadow .25s}
+.lg-field input.lg-pw{padding-right:calc(var(--u)*12)}
+.lg-field input:focus{border-color:rgba(126,200,126,.9);
+  box-shadow:0 0 0 1px rgba(126,200,126,.22),0 0 calc(var(--u)*4) rgba(94,212,140,.38),inset 0 0 calc(var(--u)*3) rgba(94,212,140,.10)}
+.lg-field input:-webkit-autofill{-webkit-text-fill-color:var(--lg-ink);caret-color:var(--lg-ink);box-shadow:0 0 0 100px #07130a inset}
+.lg-field label{position:absolute;left:calc(var(--u)*5);top:50%;transform:translateY(-50%);margin-left:-7px;padding:0 7px;
+  border-radius:6px;font-size:15px;line-height:1.3;color:rgba(168,213,168,.62);pointer-events:none;
+  transition:top .22s cubic-bezier(.2,.7,.2,1),font-size .22s,color .22s,background-color .22s,letter-spacing .22s}
+.lg-field input:focus ~ label,
+.lg-field input:not(:placeholder-shown) ~ label,
+.lg-field input:-webkit-autofill ~ label{top:0;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--lg-mint);background:#08170b}
+.lg-field input:focus ~ label{color:var(--lg-leaf)}
+
+.lg-eye{position:absolute;right:calc(var(--u)*2.2);top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:50%;
+  background:none;display:grid;place-items:center;color:rgba(168,213,168,.75);cursor:pointer;transition:color .2s,background-color .2s}
+.lg-eye:hover{color:var(--lg-leaf)}
+.lg-eye:focus-visible{outline:2px solid var(--lg-gold);outline-offset:0}
+.lg-eye svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.lg-eye .slash{stroke-dasharray:26;stroke-dashoffset:26;transition:stroke-dashoffset .28s ease}
+.lg-eye.on{color:var(--lg-leaf)}
+.lg-eye.on .slash{stroke-dashoffset:0}
+
+/* ── «Να με θυμάσαι» ── */
+#login-screen .remember-row{position:relative;width:max-content;gap:10px;margin:calc(var(--u)*.4) 0 calc(var(--u)*3.6) calc(var(--u)*1.6)}
+#login-screen .remember-row input[type="checkbox"]{display:block;position:absolute;left:0;top:0;width:20px;height:20px;margin:0;opacity:0;cursor:pointer}
+#login-screen .remember-box{width:18px;height:18px;border-radius:5px;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);
+  transition:background-color .2s,border-color .2s,box-shadow .2s}
+#login-screen .remember-box::after{font-size:12px;font-weight:800;color:#fff}
+#login-screen .remember-row input[type="checkbox"]:checked + .remember-box{background:var(--lg-green);border-color:var(--lg-green-l);box-shadow:0 0 10px rgba(94,212,140,.5)}
+#login-screen .remember-row input[type="checkbox"]:focus-visible + .remember-box{outline:2px solid var(--lg-gold);outline-offset:2px}
+#login-screen .remember-label{font-size:13px;color:rgba(255,255,255,.78)}
+
+/* ── μηνύματα κατάστασης ── */
+#login-screen .lg-status{min-height:0;margin:0 calc(var(--u)*-8) calc(var(--u)*2.2);text-align:center;font-size:12.5px;line-height:1.35}
+#login-screen .lg-status:empty{display:none}
+/* όταν υπάρχει μήνυμα (σφάλμα/φόρτωση) ο υπότιτλος κρύβεται, ώστε το περιεχόμενο να χωράει μέσα στον κύκλο */
+.lg-body:has(.lg-status:not(:empty)) .lg-sub{display:none}
+.lg-body:has(.lg-status:not(:empty)) .lg-title{margin-bottom:calc(var(--u)*5)}
+#login-screen .login-loading{color:var(--lg-mint)}
+#login-screen .login-error{color:#ff8080}
+
+/* ── κουμπί (μικρό, κεντραρισμένο) ── */
+#login-screen .btn-login{align-self:center;width:62%;min-width:138px;height:max(40px,calc(var(--u)*10.5));padding:0;border-radius:999px;
+  border:1.5px solid var(--lg-green-l);background:linear-gradient(180deg,rgba(74,158,74,.62),rgba(40,104,50,.74));
+  color:#fff;font-size:14px;font-weight:700;letter-spacing:.2em;text-indent:.2em;text-shadow:0 1px 6px rgba(0,0,0,.45);
+  box-shadow:0 0 calc(var(--u)*4) rgba(94,212,140,.32),inset 0 0 calc(var(--u)*3.5) rgba(168,213,168,.16);
+  transition:box-shadow .25s,border-color .25s,transform .12s}
+#login-screen .btn-login:hover{border-color:#a8e8a8;box-shadow:0 0 calc(var(--u)*6) rgba(94,212,140,.5),inset 0 0 calc(var(--u)*4.5) rgba(168,213,168,.24)}
+#login-screen .btn-login:active{transform:scale(.97);background:linear-gradient(180deg,rgba(74,158,74,.62),rgba(40,104,50,.74));filter:none}
+#login-screen .btn-login:focus-visible{outline:2px solid var(--lg-gold);outline-offset:3px}
+#login-screen .btn-login:disabled{opacity:1;cursor:progress;background:linear-gradient(180deg,rgba(74,158,74,.62),rgba(40,104,50,.74))}
+#login-screen .btn-login::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,236,170,.34) 50%,transparent 70%);transform:translateX(-100%)}
+#login-screen .btn-login:disabled::after{opacity:1;animation:lgSweep 1.3s ease-in-out infinite}
+
+/* ── υποσέλιδο ── */
+.lg-foot{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.75);animation:lgFade .9s .7s both}
+#login-screen .lg-foot .login-version{margin:0;font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12.5px;font-weight:500;letter-spacing:.09em;color:rgba(255,255,255,.6)}
+.lg-support{display:flex;align-items:center;justify-content:center;gap:7px;font-size:14.5px;font-weight:500;color:#e8eee8}
+.lg-support svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--lg-leaf);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lg-support a{color:var(--lg-leaf);font-weight:700;letter-spacing:.2px;text-decoration:none}
+.lg-support a:focus-visible{outline:2px solid var(--lg-gold);outline-offset:3px;border-radius:4px}
+
+/* ── σπινθήρες ── */
+.lg-sparks{position:absolute;inset:-6px -14px;pointer-events:none}
+.lg-sparks i{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:#ffe9b0;
+  box-shadow:0 0 7px 1px rgba(242,182,60,.85);opacity:0;animation:lgSpark var(--t) ease-in-out var(--dl) infinite}
+
+@keyframes lgSpin{to{transform:rotate(360deg)}}
+@keyframes lgBreathe{0%,100%{opacity:.72;transform:scale(1)}50%{opacity:1;transform:scale(1.035)}}
+@keyframes lgDiscIn{from{opacity:0;transform:scale(.93)}}
+@keyframes lgRingIn{from{opacity:0;transform:scale(.86)}}
+@keyframes lgFade{from{opacity:0}}
+@keyframes lgSweep{to{transform:translateX(100%)}}
+@keyframes lgSpark{0%,100%{opacity:0;transform:translate(0,0)}35%,65%{opacity:.85}50%{transform:translate(7px,-16px)}}
+
+@media (prefers-reduced-motion:reduce){
+  .lg-spin,.lg-scan,.lg-halo,.lg-sparks i,#login-screen .btn-login:disabled::after{animation:none!important}
+  .lg-sparks{display:none}
+  .lg-stage,.lg-drift{transform:none!important;transition:none}
+}
 </style>
 </head>
 <body>
 
 <!-- ── LOGIN SCREEN ── -->
 <div id="login-screen">
-  <div class="login-card">
-    <div class="login-field">
-      <label>Username</label>
-      <input type="text" id="inp-user" placeholder="Εισάγετε username" autocomplete="username">
+  <div class="lg-wrap">
+    <div class="lg-sparks" aria-hidden="true"><i style="--x:8%;--y:22%;--s:3px;--t:9s;--dl:-1s"></i><i style="--x:93%;--y:30%;--s:2px;--t:11s;--dl:-5s"></i><i style="--x:16%;--y:66%;--s:2px;--t:10s;--dl:-3s"></i><i style="--x:88%;--y:74%;--s:3px;--t:8s;--dl:-6s"></i><i style="--x:50%;--y:3%;--s:2px;--t:12s;--dl:-8s"></i><i style="--x:72%;--y:92%;--s:2px;--t:9s;--dl:-2s"></i></div>
+    <div class="lg-stage">
+      <div class="lg-halo" aria-hidden="true"></div>
+      <div class="lg-drift" aria-hidden="true">
+        <div class="lg-orbit">
+          <div class="lg-spin"><div class="lg-ring"></div><div class="lg-edge"></div></div>
+          <div class="lg-scan"></div>
+        </div>
+      </div>
+      <div class="lg-disc">
+        <div class="lg-body">
+          <h1 class="lg-title">ΚΑΛΩΣΗΡΘΑΤΕ</h1>
+          <p class="lg-sub">Συνδεθείτε στον λογαριασμό σας</p>
+          <div class="lg-field">
+            <input type="text" id="inp-user" placeholder=" " autocomplete="username">
+            <label for="inp-user">Username</label>
+          </div>
+          <div class="lg-field">
+            <input type="password" id="inp-pass" class="lg-pw" placeholder=" " autocomplete="current-password">
+            <label for="inp-pass">Password</label>
+            <button type="button" class="lg-eye" id="btn-eye" aria-label="Εμφάνιση κωδικού" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M4 20L20 4"/></svg>
+            </button>
+          </div>
+          <label class="remember-row">
+            <input type="checkbox" id="chk-remember">
+            <span class="remember-box"></span>
+            <span class="remember-label">Να με θυμάσαι</span>
+          </label>
+          <div class="login-loading lg-status" id="login-loading" role="status"></div>
+          <div class="login-error lg-status" id="login-error" role="alert"></div>
+          <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
+        </div>
+      </div>
     </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="inp-pass" placeholder="Εισάγετε password" autocomplete="current-password">
+    <div class="lg-foot">
+      <div class="login-version">ver. 2.1.1</div>
+      <div class="lg-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
     </div>
-    <label class="remember-row">
-      <input type="checkbox" id="chk-remember">
-      <span class="remember-box"></span>
-      <span class="remember-label">Να με θυμάσαι</span>
-    </label>
-    <div class="login-loading" id="login-loading"></div>
-    <div class="login-error" id="login-error"></div>
-    <button class="btn-login" id="btn-login" onclick="doLogin()">ΣΥΝΔΕΣΗ</button>
-  </div>
-  <div class="login-footer">
-    <div class="login-version">ver. 2.1.0</div>
-    <div class="login-contact login-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
+<script>
+// ── Login: εμφάνιση/απόκρυψη κωδικού + ελαφριά κλίση του δίσκου με το ποντίκι ──
+(function () {
+  var scr = document.getElementById('login-screen');
+  var pass = document.getElementById('inp-pass');
+  var eye = document.getElementById('btn-eye');
+  var stage = scr.querySelector('.lg-stage');
+
+  function setShown(show) {
+    pass.type = show ? 'text' : 'password';
+    eye.classList.toggle('on', show);
+    eye.setAttribute('aria-pressed', show ? 'true' : 'false');
+    eye.setAttribute('aria-label', show ? 'Απόκρυψη κωδικού' : 'Εμφάνιση κωδικού');
+  }
+  eye.addEventListener('pointerdown', function (e) { e.preventDefault(); }); // κρατά το focus στο πεδίο
+  eye.addEventListener('click', function () { setShown(pass.type === 'password'); });
+  // όταν κρύβεται η οθόνη σύνδεσης (είσοδος στην εφαρμογή), ο κωδικός ξανακρύβεται
+  new MutationObserver(function () { if (scr.style.display === 'none') setShown(false); })
+    .observe(scr, { attributes: true, attributeFilter: ['style'] });
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return; // κλίση μόνο με πραγματικό ποντίκι
+  var nx = 0, ny = 0, raf = 0;
+  function apply() {
+    raf = 0;
+    stage.style.setProperty('--tx', nx.toFixed(3));
+    stage.style.setProperty('--ty', ny.toFixed(3));
+  }
+  scr.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'touch') return;
+    var r = stage.getBoundingClientRect();
+    nx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (window.innerWidth / 2)));
+    ny = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (window.innerHeight / 2)));
+    if (!raf) raf = requestAnimationFrame(apply);
+  });
+  scr.addEventListener('pointerleave', function () { nx = ny = 0; apply(); });
+})();
+</script>
 
 <!-- ── CHANNEL SELECT SCREEN ── -->
 <div id="channel-screen">
@@ -1101,7 +1310,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v2.1.0</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v2.1.1</span></div>
     </div>
     <!-- SIM STATUS BANNER -->
     <div id="sim-status-banner">

@@ -792,10 +792,10 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
   --lg-green:#4a9e4a; --lg-green-l:#7ec87e; --lg-mint:#a8d5a8; --lg-leaf:#5ed48c;
   --lg-ink:#f3f6ee;
   font-family:'Fira Sans','Segoe UI',system-ui,sans-serif;
-  justify-content:flex-start; padding:24px 12px; padding-top:var(--top); overflow-x:hidden; overflow-y:auto;
+  justify-content:flex-start; padding:24px 12px max(14px,env(safe-area-inset-bottom)); padding-top:var(--top); overflow-x:hidden; overflow-y:auto;
 }
 @media (min-width:600px){ #login-screen{--d:400px} }
-#login-screen .lg-wrap{position:relative;margin:16px auto auto;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*6)}
+#login-screen .lg-wrap{position:relative;margin:16px auto 0;display:flex;flex-direction:column;align-items:center}
 
 /* ── σκηνή: ακολουθεί ελαφρά το ποντίκι ── */
 .lg-stage{position:relative;width:var(--d);height:var(--d);--tx:0;--ty:0;
@@ -902,7 +902,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
 #login-screen .btn-login:disabled::after{opacity:1;animation:lgSweep 1.3s ease-in-out infinite}
 
 /* ── υποσέλιδο ── */
-.lg-foot{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.75);animation:lgFade .9s .7s both}
+.lg-foot{margin-top:auto;padding-top:calc(var(--u)*6);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.75);animation:lgFade .9s .7s both}
 #login-screen .lg-foot .login-version{margin:0;font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:12.5px;font-weight:500;letter-spacing:.09em;color:rgba(255,255,255,.6)}
 .lg-support{display:flex;align-items:center;justify-content:center;gap:7px;font-size:14.5px;font-weight:500;color:#e8eee8}
 .lg-support svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--lg-leaf);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -969,10 +969,10 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
         </div>
       </div>
     </div>
-    <div class="lg-foot">
-      <div class="login-version">ver. 2.1.1</div>
-      <div class="lg-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
-    </div>
+  </div>
+  <div class="lg-foot">
+    <div class="login-version">ver. 2.1.1</div>
+    <div class="lg-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
 <script>

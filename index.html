@@ -414,6 +414,25 @@ body.dark-mode .dark-mode-icon-btn { color:#fbbf24; border-color:#4b5563; backgr
 .btn-notif { width: 100%; padding: 13px; background: #777; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif; cursor: pointer; transition: background 0.2s; }
 .notif-info { font-size: 12px; color: #888; text-align: center; margin-top: 8px; min-height: 16px; }
 .btn-calib-link { display: block; text-align: center; text-decoration: none; }
+#calib-overlay { position: fixed; inset: 0; background: #e0e0e0; z-index: 2050; display: none; align-items: center; justify-content: center; padding: 20px; }
+#calib-overlay.visible { display: flex; }
+.calib-box { max-width: 360px; }
+.calib-intro { margin-bottom: 8px; }
+.calib-steps { margin: 0 0 16px; padding-left: 22px; }
+.calib-steps li { margin-bottom: 6px; }
+.calib-close { display: block; width: 100%; margin-top: 10px; }
+#calib-frame-overlay { position: fixed; inset: 0; background: #e0e0e0; z-index: 2060; display: none; flex-direction: column; }
+#calib-frame-overlay.visible { display: flex; }
+.calib-frame-bar { display: flex; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px; background: #d0d0d0; border-bottom: 2px solid #b0b0b0; flex-shrink: 0; }
+.calib-frame-back { padding: 8px 14px; background: #c8c8c8; color: #111; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.calib-frame-back:active { background: #b0b0b0; }
+.calib-frame-title { flex: 1; font-size: 16px; font-weight: 800; color: #111; }
+.calib-frame-ext { padding: 6px 10px; font-size: 20px; line-height: 1; text-decoration: none; color: #333; }
+.calib-frame-status { padding: 8px 14px; font-size: 13px; line-height: 1.5; color: #555; text-align: center; flex-shrink: 0; }
+.calib-frame-status:empty { display: none; }
+.calib-frame-status a { font-weight: 700; color: inherit; }
+.calib-retry { display: block; width: auto; margin: 8px auto 2px; padding: 9px 20px; font-size: 14px; }
+.calib-frame { flex: 1; width: 100%; border: 0; background: #fff; }
 /* ── HUMIDITY TOAST ── */
 #hum-toast { position: fixed; top: 360px; left: 50%; transform: translateX(-50%) scale(0.88); background: #1a6dcc; color: #fff; border-radius: 12px; padding: 12px 20px; font-size: 14px; font-weight: 700; text-align: center; max-width: 300px; width: 88%; box-shadow: 0 6px 18px #9fc2ee; z-index: 1600; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; line-height: 1.4; }
 #hum-toast.show { opacity: 1; transform: translateX(-50%) scale(1); }
@@ -524,12 +543,14 @@ body.dark-mode .btn-wakehour-change,body.dark-mode .btn-notes-clear,
 body.dark-mode .btn-clear,body.dark-mode .btn-confirm-no{background:#374151;color:#e5e7eb;border-color:#4b5563}
 body.dark-mode .skeleton,body.dark-mode .skel-scale-wrap,body.dark-mode .skel-chart-wrap{background:#263244}
 body.dark-mode #confirm-overlay,body.dark-mode #alert-overlay,
-body.dark-mode .wakehours-editor-overlay,body.dark-mode #report-overlay{background:rgba(3,7,18,.92)}
+body.dark-mode .wakehours-editor-overlay,body.dark-mode #report-overlay,body.dark-mode #calib-overlay{background:rgba(3,7,18,.92)}
+body.dark-mode #calib-frame-overlay{background:#0b1220}
+body.dark-mode .calib-frame-bar{background:#1f2937;border-bottom-color:#374151}
+body.dark-mode .calib-frame-back{background:#374151;color:#f3f4f6}
+body.dark-mode .calib-frame-title,body.dark-mode .calib-frame-ext{color:#f3f4f6}
+body.dark-mode .calib-frame-status{color:#cbd5e1}
 body.dark-mode .confirm-box,body.dark-mode .alert-box,body.dark-mode .report-box,
 body.dark-mode .wakehours-editor-box{box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.dark-mode-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.dark-mode-btn{padding:10px 14px;border:1px solid #4a9e4a;border-radius:9px;background:#4a9e4a;color:#fff;font-weight:700;font-size:14px;cursor:pointer}
-body.dark-mode .dark-mode-btn{background:#374151;border-color:#6b7280}
 
 
 /* ═══════════ ΝΕΟ DESIGN «Πεδίο» — field-instrument layer ═══════════
@@ -621,7 +642,7 @@ body:not(.z){background:var(--bg);color:var(--ink);font-family:var(--txt);
   .wakehour-remove-btn,.btn-wakehour-add,.btn-wakehour-change,.btn-confirm-no,.btn-wakehour-cancel{background:var(--panel2);color:var(--ink);border:1px solid var(--rule);border-radius:4px}
 
   /* κύρια κουμπιά */
-  .btn-range-apply,.btn-notes-save,.btn-wakehour-save,.btn-report,.btn-notif,.dark-mode-btn{background:var(--green);color:var(--on-green);border:0;border-radius:5px;font-weight:600}
+  .btn-range-apply,.btn-notes-save,.btn-wakehour-save,.btn-report,.btn-notif{background:var(--green);color:var(--on-green);border:0;border-radius:5px;font-weight:600}
   .btn-login{background:var(--honey);color:var(--on-honey);border-radius:5px}
   .btn-login:active,.btn-notif:active,.btn-report:active,.btn-notes-save:active,.btn-wakehour-save:active,.btn-range-apply:active{filter:brightness(.9)}
 
@@ -635,7 +656,11 @@ body:not(.z){background:var(--bg);color:var(--ink);font-family:var(--txt);
   .btn-channel .ch-num{font-family:var(--num);font-size:34px;color:var(--honey)}
 
   /* παράθυρα & ειδοποιήσεις */
-  #confirm-overlay,#alert-overlay,.wakehours-editor-overlay,#report-overlay{background:var(--bg)}
+  #confirm-overlay,#alert-overlay,.wakehours-editor-overlay,#report-overlay,#calib-overlay,#calib-frame-overlay{background:var(--bg)}
+  .calib-frame-bar{background:var(--panel);border-bottom:1px solid var(--rule)}
+  .calib-frame-back{background:var(--panel2);color:var(--ink);border:1px solid var(--rule);border-radius:5px}
+  .calib-frame-title,.calib-frame-ext{color:var(--ink)}
+  .calib-frame-status{color:var(--mute)}
   .alert-box,.confirm-box,.report-box,.wakehours-editor-box,#sim-toast,#conn-info-toast,#push-toast{background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:8px;box-shadow:none}
   .alert-header{background:var(--red)}
   .alert-msg,.confirm-msg,.wakehours-editor-title,.report-box-title,.report-stat-value,.conn-info-toast-msg,.push-toast-msg{color:var(--ink)}
@@ -971,7 +996,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
     </div>
   </div>
   <div class="lg-foot">
-    <div class="login-version">ver. 2.1.1</div>
+    <div class="login-version">ver. 2.1.5</div>
     <div class="lg-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
@@ -1061,6 +1086,36 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       <button class="btn-confirm-no"  onclick="confirmAction(false)">Όχι</button>
     </div>
   </div>
+</div>
+
+<!-- ── CALIBRATION GUIDE ── -->
+<div id="calib-overlay">
+  <div class="report-box calib-box">
+    <div class="report-box-header">
+      <div class="report-box-title">⚖️ Βαθμονόμηση ζυγαριάς</div>
+      <button type="button" class="report-box-close" onclick="closeCalibGuide()">×</button>
+    </div>
+    <div class="notif-desc calib-intro">Ρύθμιση απόβαρου και παράγοντα (factor) απευθείας από τη ζυγαριά, με άδεια ζυγαριά:</div>
+    <ol class="notif-desc calib-steps">
+      <li>Συνδεθείτε στο WiFi <b>Kypseli-Zygaria</b> με password <b>12341234</b></li>
+      <li>Πατήστε το κουμπί παρακάτω</li>
+      <li>Όταν τελειώσετε, επιστρέψτε στο κανονικό WiFi</li>
+    </ol>
+    <a class="btn-notif btn-calib-link" href="http://192.168.4.1" target="_blank" rel="noopener" onclick="return openCalibFrame(event)">⚖️ Άνοιγμα σελίδας ζυγαριάς</a>
+    <div class="notif-info">Η σελίδα ανοίγει από τη ζυγαριά και δεν χρειάζεται internet.</div>
+    <button type="button" class="btn-notes-clear calib-close" onclick="closeCalibGuide()">Κλείσιμο</button>
+  </div>
+</div>
+
+<!-- ── CALIBRATION: σελίδα ζυγαριάς (Wemos) μέσα στην εφαρμογή ── -->
+<div id="calib-frame-overlay">
+  <div class="calib-frame-bar">
+    <button type="button" class="calib-frame-back" onclick="closeCalibFrame()">← Πίσω</button>
+    <div class="calib-frame-title">⚖️ Ζυγαριά</div>
+    <a class="calib-frame-ext" href="http://192.168.4.1" target="_blank" rel="noopener" title="Άνοιγμα σε νέα καρτέλα">↗</a>
+  </div>
+  <div class="calib-frame-status" id="calib-frame-status"></div>
+  <iframe id="calib-frame" class="calib-frame" title="Σελίδα ζυγαριάς" referrerpolicy="no-referrer" onload="onCalibFrameLoad()"></iframe>
 </div>
 
 <!-- ── REPORT MODAL ── -->
@@ -1288,10 +1343,10 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
 
   <!-- ══ TAB: INFO ══ -->
   <div id="tab-info" class="tab-page">
-    <div class="info-section-title">Εμφάνιση</div>
-    <div class="info-card dark-mode-row">
-      <div><div style="font-weight:700">🌙 Dark mode</div><div style="font-size:12px;color:#888;margin-top:4px">Σκούρο θέμα για όλη την εφαρμογή</div></div>
-      <button type="button" class="dark-mode-btn" id="dark-mode-toggle" onclick="toggleDarkMode()">Ενεργοποίηση</button>
+    <!-- SIM STATUS BANNER -->
+    <div id="sim-status-banner">
+      <span class="sim-banner-icon" id="sim-banner-icon">📶</span>
+      <span class="sim-banner-text" id="sim-banner-text"></span>
     </div>
 
     <div class="info-section-title">Σημειώσεις</div>
@@ -1310,12 +1365,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v2.1.1</span></div>
-    </div>
-    <!-- SIM STATUS BANNER -->
-    <div id="sim-status-banner">
-      <span class="sim-banner-icon" id="sim-banner-icon">📶</span>
-      <span class="sim-banner-text" id="sim-banner-text"></span>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v2.1.5</span></div>
     </div>
 
     <div class="info-section-title">Ώρες Αφύπνισης Ζυγαριάς</div>
@@ -1345,9 +1395,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
 
     <div class="info-section-title">Βαθμονόμηση ζυγαριάς</div>
 <div class="notif-wrap">
-<div class="notif-desc">Ρύθμιση απόβαρου και παράγοντα (factor) απευθείας από τη ζυγαριά, με άδεια ζυγαριά:<br>1. Συνδεθείτε στο WiFi <b>Kypseli-Zygaria</b> της ζυγαριάς με password <b>12341234</b><br>2. Πατήστε το κουμπί παρακάτω<br>3. Όταν τελειώσετε, επιστρέψτε στο κανονικό WiFi</div>
-<a class="btn-notif btn-calib-link" href="http://192.168.4.1" target="_blank" rel="noopener">⚖️ Άνοιγμα βαθμονόμησης</a>
-<div class="notif-info">Η σελίδα ανοίγει από τη ζυγαριά και δεν χρειάζεται internet.</div>
+<button type="button" class="btn-notif" onclick="openCalibGuide()">⚖️ Άνοιγμα βαθμονόμησης</button>
 </div>
 
     <div class="info-section-title">Ειδοποιήσεις</div>
@@ -2839,6 +2887,54 @@ function generateReport() {
 function closeReport() {
   document.getElementById('report-overlay').classList.remove('visible');
 }
+// ── Βαθμονόμηση: σελίδα οδηγιών πριν ανοίξει η σελίδα της ζυγαριάς (Wemos) ──
+function openCalibGuide() {
+  document.getElementById('calib-overlay').classList.add('visible');
+}
+function closeCalibGuide() {
+  document.getElementById('calib-overlay').classList.remove('visible');
+}
+// Η σελίδα της ζυγαριάς (http://192.168.4.1) ανοίγει μέσα στην εφαρμογή (iframe).
+// Αν η εφαρμογή τρέχει από https, ο browser μπλοκάρει σελίδες http μέσα της (mixed content):
+// τότε επιστρέφουμε true και το link ανοίγει κανονικά σε νέα καρτέλα.
+const CALIB_URL = 'http://192.168.4.1';
+const CALIB_TIMEOUT_MS = 15000;   // μετά από 15" χωρίς φόρτωση εμφανίζεται κουμπί επανάληψης
+let _calibFrameActive = false, _calibFrameTimer = null;
+function startCalibFrameLoad() {
+  const st = document.getElementById('calib-frame-status');
+  st.textContent = 'Σύνδεση με τη ζυγαριά…';
+  _calibFrameActive = true;
+  document.getElementById('calib-frame').src = CALIB_URL;
+  clearTimeout(_calibFrameTimer);
+  _calibFrameTimer = setTimeout(function () {
+    if (!_calibFrameActive) return;
+    st.innerHTML = 'Δεν φορτώνει; Ελέγξτε ότι είστε συνδεδεμένοι στο WiFi <b>Kypseli-Zygaria</b>. ' +
+      '<a href="' + CALIB_URL + '" target="_blank" rel="noopener">Άνοιγμα σε νέα καρτέλα</a>' +
+      '<button type="button" class="btn-notif calib-retry" onclick="retryCalibFrame()">↻ Επανάληψη</button>';
+  }, CALIB_TIMEOUT_MS);
+}
+function openCalibFrame(e) {
+  if (location.protocol === 'https:') return true;
+  if (e) e.preventDefault();
+  document.getElementById('calib-frame-overlay').classList.add('visible');
+  startCalibFrameLoad();
+  return false;
+}
+function retryCalibFrame() {
+  startCalibFrameLoad();
+}
+function onCalibFrameLoad() {
+  if (!_calibFrameActive) return;
+  clearTimeout(_calibFrameTimer);
+  document.getElementById('calib-frame-status').textContent = '';
+}
+function closeCalibFrame() {
+  _calibFrameActive = false;
+  clearTimeout(_calibFrameTimer);
+  document.getElementById('calib-frame').src = 'about:blank';
+  document.getElementById('calib-frame-status').textContent = '';
+  document.getElementById('calib-frame-overlay').classList.remove('visible');
+}
 function copyReport() {
   const text = window._lastReportPlainText || '';
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -3914,8 +4010,6 @@ window.addEventListener('load', () => window.refreshNotifButtonState());
 // ── DARK MODE: αποθήκευση επιλογής στη συσκευή ──
 window.applyDarkMode = function(enabled) {
   document.body.classList.toggle('dark-mode', !!enabled);
-  const btn = document.getElementById('dark-mode-toggle');
-  if (btn) btn.textContent = enabled ? 'Απενεργοποίηση' : 'Ενεργοποίηση';
   const iconBtn = document.getElementById('dark-mode-icon-btn');
   if (iconBtn) {
     iconBtn.textContent = enabled ? '☀️' : '🌙';

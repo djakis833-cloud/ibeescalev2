@@ -844,11 +844,12 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
 .lg-edge{inset:calc(var(--u)*-.55);filter:blur(.5px);
   -webkit-mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*1.2),#000 calc(100% - var(--u)*.6));
           mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*1.2),#000 calc(100% - var(--u)*.6))}
-/* αναλαμπή που κυκλώνει το δακτύλιο όσο γίνεται η σύνδεση */
-.lg-scan{position:absolute;inset:calc(var(--u)*-.55);border-radius:50%;opacity:0;transition:opacity .35s;
+/* αναλαμπή που κυκλώνει το δακτύλιο όσο γίνεται η σύνδεση
+   --w = πάχος της γραμμής προς τα ΕΞΩ από την άκρη του δίσκου (σε u). Παλιά τιμή ≈ .55 — μεγαλύτερο --w = πιο χοντρή γραμμή */
+.lg-scan{--w:2.4;position:absolute;inset:calc(var(--u)*var(--w)*-1);border-radius:50%;opacity:0;transition:opacity .35s;
   background:conic-gradient(from 0deg,transparent 0 250deg,rgba(255,224,150,.55) 320deg,#fff8e1 358deg,transparent 360deg);
-  -webkit-mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*2.4),#000 calc(100% - var(--u)*1.2));
-          mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*2.4),#000 calc(100% - var(--u)*1.2));
+  -webkit-mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*(var(--w) + 1.8)),#000 calc(100% - var(--u)*(var(--w) + .8)),#000 calc(100% - var(--u)*.4),transparent 100%);
+          mask:radial-gradient(circle closest-side,transparent calc(100% - var(--u)*(var(--w) + 1.8)),#000 calc(100% - var(--u)*(var(--w) + .8)),#000 calc(100% - var(--u)*.4),transparent 100%);
   animation:lgSpin 1.15s linear infinite}
 #login-screen:has(#btn-login:disabled) .lg-scan{opacity:1}
 
@@ -862,8 +863,6 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
   animation:lgDiscIn .9s .12s cubic-bezier(.2,.7,.2,1) both}
 .lg-body{width:calc(var(--u)*72);display:flex;flex-direction:column;align-items:stretch}
 
-.lg-title{margin:0;text-align:center;font-weight:800;font-size:calc(var(--u)*6.6);line-height:1.1;letter-spacing:.06em;
-  color:#fff4d8;text-shadow:0 0 .32em rgba(242,182,60,.8),0 0 1em rgba(227,161,26,.45)}
 .lg-sub{margin:calc(var(--u)*1.6) 0 calc(var(--u)*5);text-align:center;font-size:max(12px,calc(var(--u)*3.5));color:var(--lg-mint)}
 
 /* ── πεδία: στρογγυλά, με ετικέτα που ανεβαίνει στο περίγραμμα ── */
@@ -908,7 +907,6 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
 #login-screen .lg-status:empty{display:none}
 /* όταν υπάρχει μήνυμα (σφάλμα/φόρτωση) ο υπότιτλος κρύβεται, ώστε το περιεχόμενο να χωράει μέσα στον κύκλο */
 .lg-body:has(.lg-status:not(:empty)) .lg-sub{display:none}
-.lg-body:has(.lg-status:not(:empty)) .lg-title{margin-bottom:calc(var(--u)*5)}
 #login-screen .login-loading{color:var(--lg-mint)}
 #login-screen .login-error{color:#ff8080}
 
@@ -970,7 +968,6 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       </div>
       <div class="lg-disc">
         <div class="lg-body">
-          <h1 class="lg-title">ΚΑΛΩΣΗΡΘΑΤΕ</h1>
           <p class="lg-sub">Συνδεθείτε στον λογαριασμό σας</p>
           <div class="lg-field">
             <input type="text" id="inp-user" placeholder=" " autocomplete="username">
@@ -996,7 +993,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
     </div>
   </div>
   <div class="lg-foot">
-    <div class="login-version">ver. 2.1.5</div>
+    <div class="login-version">ver. 2.1.7</div>
     <div class="lg-support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Υποστήριξη:</span><a href="tel:+306970065700">+30 6970065700</a></div>
   </div>
 </div>
@@ -1365,7 +1362,7 @@ body:not(.z) #login-screen .login-card{border:1px solid rgba(255,215,120,.28);bo
       <div class="info-row"><span class="info-row-label">TS id :</span><span class="info-row-val" id="info-tsid">—</span></div>
       <div class="info-row"><span class="info-row-label">sim S/N :</span><span class="info-row-val" id="info-sim">—</span></div>
       <div class="info-row"><span class="info-row-label">expired date :</span><span class="info-row-val" id="info-expired">—</span></div>
-      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v2.1.5</span></div>
+      <div class="info-row"><span class="info-row-label">version :</span><span class="info-row-val">v2.1.7</span></div>
     </div>
 
     <div class="info-section-title">Ώρες Αφύπνισης Ζυγαριάς</div>
